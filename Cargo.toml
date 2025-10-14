@@ -1,0 +1,10 @@
+[package]
+name = "bog"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+maud = { version = "0.27.0", features = ["poem"] }
+poem = "3.1.12"
+postgresql = "0.1.1"
+tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
