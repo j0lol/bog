@@ -5,8 +5,9 @@ edition = "2024"
 
 [dependencies]
 maud = { version = "0.27.0", features = ["poem"] }
-poem = "3.1.12"
+poem = { version = "3.1.12", features = ["static-files"] }
 postgresql = "0.1.1"
 rusqlite = "0.37.0"
 rusqlite_migration = "2.3.0"
+serde = "1.0.228"
 tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }

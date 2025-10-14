@@ -1,6 +1,10 @@
-use crate::WrappedConnection;
-use maud::{Markup, html};
-use poem::{handler, web::Data};
+use crate::{D, W, template::header};
+use maud::{Markup, PreEscaped, html};
+use poem::{
+    IntoResponse, handler,
+    web::{Data, Form, Redirect},
+};
+use serde::Deserialize;
 
 struct Post {
     title: String,
@@ -8,7 +12,7 @@ struct Post {
 }
 
 #[handler]
-pub async fn list_posts(Data(conn): Data<&WrappedConnection>) -> Markup {
+pub fn list_posts(Data(conn): D<&W>) -> Markup {
     let conn = conn.lock().unwrap();
 
     let mut stmt = conn.prepare("SELECT title, contents FROM post").unwrap();
@@ -22,15 +26,59 @@ pub async fn list_posts(Data(conn): Data<&WrappedConnection>) -> Markup {
         .unwrap();
 
     html! {
-        h1 { "Post list" }
-        ol {
-            @for post in post_iter.flatten() {
-                li  {
-                    h2 { (post.title) }
-                    pre { (post.contents) }
-                }
+        ( header() )
+        body {
+            h1 { "Post list" }
+            ol {
+                @for post in post_iter.flatten() {
+                    li  {
+                        h2 { (post.title) }
+                        ( PreEscaped (post.contents) )
+                    }
 
+                }
             }
         }
     }
+}
+
+#[handler]
+pub fn new_post() -> Markup {
+    html! {
+        ( header() )
+        body {
+            h1 { "Make a new post" }
+            form method="POST" {
+                label {
+                    "Title"
+                    input name="title" {}
+                }
+                label {
+                    "Contents"
+                    textarea name="contents" {}
+                }
+                button type="submit" { "Submit" }
+            }
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct SubmitNewPostForm {
+    title: String,
+    contents: String,
+}
+#[handler]
+pub fn submit_new_post(
+    Form(form): Form<SubmitNewPostForm>,
+    Data(conn): D<&W>,
+) -> impl IntoResponse {
+    let conn = conn.lock().unwrap();
+
+    let mut stmt = conn
+        .prepare("INSERT INTO post (title, contents) VALUES (?1, ?2)")
+        .unwrap();
+    stmt.execute((form.title, form.contents)).unwrap();
+
+    Redirect::see_other("/posts")
 }
