@@ -20,6 +20,23 @@ const MIGRATIONS_SLICE: &[M<'_>] = &[
         VALUES ("Foo Post", "Lorum ipsum. Blablala.", "foo", datetime('now'))
         "#,
     ),
+    M::up(
+        "CREATE TABLE draft(
+            title TEXT NOT NULL,
+            contents TEXT NOT NULL,
+            slug TEXT NOT NULL UNIQUE,
+            subtitle TEXT,
+            category TEXT,
+            bsky_uri TEXT,
+            creation_datetime TEXT NOT NULL
+        )",
+    ),
+    M::up(
+        r#"
+        INSERT INTO draft(title, contents, slug, creation_datetime)
+        VALUES ("A draft post.", "My beautiful Post", "change-me-please", datetime('now'))
+        "#,
+    ),
 ];
 
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATIONS_SLICE);
