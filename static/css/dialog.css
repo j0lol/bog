@@ -1,0 +1,54 @@
+.dialog.profile {
+    image-rendering: pixelated;
+    height: 120px;
+    width: 120px;
+
+    @media (width <= 27rem) {
+        & {
+            height: 80px;
+            width: 80px;
+        }
+    }
+}
+
+.dialog.speech {
+    --bw-y: 14px;
+    --bw-x: 18px;
+    border-image-slice: 27 34 24 38 fill;
+    border-image-width: var(--bw-y) var(--bw-x) var(--bw-y) var(--bw-x);
+    border-image-outset: 0 0 0 0;
+    border-image-repeat: stretch stretch;
+    border-image-source: url("/static/speech/box.png");
+    border-style: solid;
+    image-rendering: pixelated;
+
+    padding: 1rem 1.2rem;
+
+    color-scheme: dark;
+    &.jo p {
+        font-family: var(--font-body);
+    }
+    &.you p {
+        font-family: var(--font-body);
+    }
+    & p {
+        color: rgb(var(--primary-200));
+        margin: 0;
+    }
+}
+
+.dialog-box {
+    display: flex;
+    flex-direction: row;
+}
+@media (width <= 27rem) {
+    .dialog-box {
+        flex-direction: column;
+    }
+    .dialog.speech {
+        --bw-y: 9px;
+        --bw-x: 12px;
+        padding: 0.5rem 0.7rem;
+        font-size: 10pt;
+    }
+}

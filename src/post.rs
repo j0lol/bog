@@ -1,4 +1,7 @@
-use crate::{D, W, template::header};
+use crate::{
+    D, W,
+    template::{header, page},
+};
 use maud::{Markup, PreEscaped, html};
 use poem::{
     IntoResponse, handler,
@@ -25,9 +28,8 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
         })
         .unwrap();
 
-    html! {
-        ( header() )
-        body {
+    page(
+        html! {
             h1 { "Post list" }
             ol {
                 @for post in post_iter.flatten() {
@@ -38,8 +40,9 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
 
                 }
             }
-        }
-    }
+        },
+        "/blog",
+    )
 }
 
 #[handler]
