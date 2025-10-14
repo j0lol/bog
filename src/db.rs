@@ -3,11 +3,21 @@ use rusqlite_migration::{M, Migrations};
 
 // Define migrations
 const MIGRATIONS_SLICE: &[M<'_>] = &[
-    M::up("CREATE TABLE post(title TEXT NOT NULL, contents TEXT NOT NULL);"),
+    M::up(
+        "CREATE TABLE post(
+            title TEXT NOT NULL,
+            contents TEXT NOT NULL,
+            slug TEXT NOT NULL UNIQUE,
+            subtitle TEXT,
+            category TEXT,
+            bsky_uri TEXT,
+            creation_datetime TEXT NOT NULL
+        );",
+    ),
     M::up(
         r#"
-        INSERT INTO post(title, contents)
-        VALUES ("Foo Post", "Lorum ipsum. Blablala.")
+        INSERT INTO post(title, contents, slug, creation_datetime)
+        VALUES ("Foo Post", "Lorum ipsum. Blablala.", "foo", datetime('now'))
         "#,
     ),
 ];
