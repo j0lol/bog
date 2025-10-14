@@ -1,7 +1,13 @@
 mod db;
+mod post;
 
-use maud::{html, Markup};
-use poem::{get, handler, listener::TcpListener, Route, Server};
+use crate::post::list_posts;
+use maud::{Markup, html};
+use poem::{EndpointExt, Route, Server, get, handler, listener::TcpListener};
+use rusqlite::Connection;
+use std::sync::{Arc, Mutex};
+
+type WrappedConnection = Arc<Mutex<Connection>>;
 
 #[handler]
 fn hello_world() -> Markup {
@@ -12,9 +18,13 @@ fn hello_world() -> Markup {
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-    let _conn = db::connect();
-    
-    let app = Route::new().at("/hello", get(hello_world));
+    let conn = Arc::new(Mutex::new(db::connect()));
+
+    let app = Route::new()
+        .at("/hello", get(hello_world))
+        .at("/posts", get(list_posts))
+        .data(conn.clone());
+
     Server::new(TcpListener::bind("0.0.0.0:3000"))
         .name("hello-world")
         .run(app)

@@ -1,12 +1,15 @@
 use rusqlite::Connection;
-use rusqlite_migration::{Migrations, M};
+use rusqlite_migration::{M, Migrations};
 
 // Define migrations
 const MIGRATIONS_SLICE: &[M<'_>] = &[
     M::up("CREATE TABLE post(title TEXT NOT NULL, contents TEXT NOT NULL);"),
-
-    // In the future, add more migrations here:
-    //M::up("ALTER TABLE friend ADD COLUMN email TEXT;"),
+    M::up(
+        r#"
+        INSERT INTO post(title, contents)
+        VALUES ("Foo Post", "Lorum ipsum. Blablala.")
+        "#,
+    ),
 ];
 
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATIONS_SLICE);
