@@ -11,6 +11,7 @@ use poem::{
     EndpointExt, Route, Server, endpoint::StaticFilesEndpoint, get, handler, listener::TcpListener,
     web::Data,
 };
+use rand::seq::SliceRandom;
 use rusqlite::Connection;
 use std::{
     fs::read_to_string,
@@ -23,11 +24,24 @@ type D<T> = Data<T>;
 
 #[handler]
 fn index() -> Markup {
-    let pronouns = ["she/her", "they/them", "it/its"];
-    let genders = ["𐂂", "\u{2400}", "\u{2205}", "girl?", "stolen", "not"];
+    let mut rng = rand::rng();
 
-    let select_1 = html! {};
-    let select_2 = html! {};
+    let mut pronouns = ["she/her", "they/them", "it/its"];
+    let mut genders = ["𐂂", "\u{2400}", "\u{2205}", "girl?", "stolen", "not"];
+
+    pronouns.shuffle(&mut rng);
+    genders.shuffle(&mut rng);
+
+    let select_1 = html! {
+        select { @for thing in pronouns {
+                option { (thing) }
+        } }
+    };
+    let select_2 = html! {
+        select { @for thing in genders {
+                option { (thing) }
+        } }
+    };
 
     html! {
         (header() )
@@ -39,16 +53,59 @@ fn index() -> Markup {
                     p {
                         "I'm Jo. "
                         label #my-pronouns { "My Pronouns are " (select_1) }
-                        "and"
-                        label { " my gender is" (select_2) }
+                        " and "
+                        label { "my gender is" (select_2) }
                     }
 
                     p {
-                        "I'm a CompSci graduate from the University of Sussex."
+                        "I'm a CompSci graduate from the University of Sussex. "
                         small { a href="/contact" { "(Hire me!)"} }
                     }
                 }))
-                "details"
+
+                details style="margin-top: 1rem;" {
+                    summary { "What's your pronouns?" }
+
+                    label #pronouns-blurb {
+                        input #pronouns-choice;
+                    }
+                    button #pronouns-submit type="button" { "Submit" }
+                    // Ugly please kill
+                    script { ( PreEscaped("
+                        function steal_pronouns() {
+                            let input_field = document.querySelector(\"#pronouns-choice\");
+                            let pronouns = input_field.value;
+                            input_field.value = \"\";
+
+                            document.querySelector(\"#pronouns-blurb\").innerHTML = \"haha! mine now!\";
+                            document.querySelector(\"#my-pronouns\").innerHTML = \"My pronouns are <b>\" + pronouns + \"</b>\";
+                            document.querySelector(\"#pronouns-submit\").remove();
+                        }
+
+                        document.querySelector(\"#pronouns-submit\").addEventListener(\"click\", steal_pronouns);
+                        "))
+
+                    }
+                }
+
+                h2 { "What do you do?" }
+                p { "I mainly write software, and study in the art of writing software.
+                    My specialities lie in writing correct, robust code.
+                    I love to read and write documentation, and to double-check my work.
+                    Outside of development, I like to draw and write,
+                    and cook meals with a good splash of umami.
+                    I am conversational in a constructed language, toki pona.
+                    " }
+                p { "Here's what I'm interested in right now!" }
+
+                ul style="margin-top: -0.5rem;" {
+                    li { "Rust" }
+                    li { "Making small stuff with PHP" }
+                    li { "WebGPU for fast, write-once-run-anywhere rendering" }
+                    li { "Small websites, small communities" }
+                    li { "Idiomatic vanilla Javascript, modern CSS" }
+                    li { "Clean design" }
+                }
             }
         }
     }
