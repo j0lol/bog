@@ -15,7 +15,7 @@ const MIGRATIONS_SLICE: &[M<'_>] = &[
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATIONS_SLICE);
 
 pub fn connect() -> Connection {
-    let mut conn = Connection::open_in_memory().unwrap();
+    let mut conn = Connection::open("./db.db3").unwrap();
 
     // Apply some PRAGMA, often better to do it outside of migrations
     conn.pragma_update_and_check(None, "journal_mode", "WAL", |_| Ok(()))
