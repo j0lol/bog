@@ -2,6 +2,7 @@
 name = "bog"
 version = "0.1.0"
 edition = "2024"
+build = "build.rs"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -12,3 +13,7 @@ rusqlite = { version = "0.37.0", features = ["chrono"] }
 rusqlite_migration = "2.3.0"
 serde = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[build-dependencies]
+vergen-git2 = { version = "1", features = ["build", "cargo", "rustc", "si"] }
+

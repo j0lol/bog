@@ -1,6 +1,10 @@
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 
 pub fn header() -> Markup {
+    header_extra(html! {})
+}
+
+pub fn header_extra(markup: Markup) -> Markup {
     html! {
         (DOCTYPE)
         head {
@@ -14,6 +18,15 @@ pub fn header() -> Markup {
 
             meta name="theme-color" content="#b497ee";
             meta name="apple-mobile-web-app-status-bar-style" content="#b497ee";
+
+            script src="/static/js/prism.js" defer {}
+            link rel="stylesheet" type="text/css" href="/static/css/prism-theme-mocha.css" defer;
+
+            link rel="icon" href="/static/favicon.ico" sizes="any";
+            link rel="apple-touch-icon" href="/static/j0site-pfp.png";
+            meta property="og:image" content="/static/j0site-banner.png";
+
+            (markup)
         }
     }
 }
@@ -22,10 +35,17 @@ pub fn footer() -> Markup {
     html! {
         footer #page-footer {
             div.tablet-hide {
-                span { "This website is running on " a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)" { samp { (env!("CARGO_CRATE_NAME")) } } " v" (env!("CARGO_PKG_VERSION")) "." }
+                span {
+                    "This website is running on "
+                    a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)"
+                    { samp { (env!("CARGO_CRATE_NAME")) } }
+                    " "
+                    a href={"https://tangled.org/@j0.lol/bog/commit/" (env!("VERGEN_GIT_SHA"))} style="color: var(--fg-header); font-size: 0.8rem;"
+                    { samp { (env!("VERGEN_GIT_SHA")[..8]) } " (" (env!("VERGEN_GIT_COMMIT_DATE")) ")" }
+                    "."
+                }
             }
             (PreEscaped("
-                    
             <div class=\"_88x31s\">
                 <span class=\"sr-only\">Miscellaneous links:</span>
                 <a href=\"/\">
@@ -33,8 +53,8 @@ pub fn footer() -> Markup {
                          alt=\"Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.\">
                 </a>
 
-                <a href=\"https://www.php.net\">
-                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/php.gif\" alt=\"Powered by PHP\">
+                <a href=\"https://maud.lambda.xyz\">
+                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/maud.png\" alt=\"Powered by Maud\">
                 </a>
                 <a href=\"https://brainmade.org\">
                     <div style=\"display: flex; padding: 3px; background-color: #000\">
@@ -42,7 +62,7 @@ pub fn footer() -> Markup {
                     </div>
                 </a>
             </div>
-                "))
+            "))
         }
     }
 }
@@ -82,6 +102,20 @@ pub fn page(markup: Markup, endpoint: &str) -> Markup {
             main {
                 (markup)
             }
+            ( footer() )
+        }
+    }
+}
+
+pub fn page_article(markup: Markup, endpoint: &str) -> Markup {
+    html! {
+        ( header() )
+        div.wrapper {
+            (navbar(endpoint))
+            article {
+                (markup)
+            }
+            ( footer() )
         }
     }
 }

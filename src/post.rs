@@ -1,6 +1,6 @@
 use crate::{
     D, W,
-    template::{header, navbar, page},
+    template::{footer, header, navbar, page, page_article},
 };
 use chrono::{DateTime, Local};
 use maud::{Markup, PreEscaped, html};
@@ -10,7 +10,7 @@ use poem::{
 };
 use serde::Deserialize;
 
-const ISO8601_DATE: &'static str = "%Y-%m-%dT%H:%M";
+const ISO8601_DATE: &str = "%Y-%m-%dT%H:%M";
 
 fn clock_icon() -> Markup {
     html! {
@@ -87,23 +87,20 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         })
         .unwrap();
 
-    html! {
-        ( header() )
-        div.wrapper {
-            (navbar(&format!("/blog/{}", post.slug)))
-            article {
-                h1.blog-head { (post.title)}
-                span.blog-subhead { em { "subtitle" }}
-                hr.frontmatter;
-                p.blog-publish {
-                    ( clock_icon() )
-                    time datetime=(post.creation_datetime) { (post.creation_datetime) }
-                }
-
-                (PreEscaped(post.contents))
+    page_article(
+        html! {
+            h1.blog-head { (post.title)}
+            span.blog-subhead { em { "subtitle" }}
+            hr.frontmatter;
+            p.blog-publish {
+                ( clock_icon() )
+                time datetime=(post.creation_datetime) { (post.creation_datetime) }
             }
-        }
-    }
+
+            (PreEscaped(post.contents))
+        },
+        &format!("/blog/{}", post.slug),
+    )
 }
 
 #[handler]
@@ -153,6 +150,10 @@ pub fn new_post(Data(conn): D<&W>) -> Markup {
 
                 br;
                 span { "Your draft is auto saved..." }
+
+                // Prevent implicit submission of the form (with enter)
+                button type="submit" disabled style="display: none" aria-hidden="true";
+
                 button type="submit" { "Publish" }
             }
 
