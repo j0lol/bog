@@ -18,6 +18,35 @@ pub fn header() -> Markup {
     }
 }
 
+pub fn footer() -> Markup {
+    html! {
+        footer #page-footer {
+            div.tablet-hide {
+                span { "This website is running on " a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)" { samp { (env!("CARGO_CRATE_NAME")) } } " v" (env!("CARGO_PKG_VERSION")) "." }
+            }
+            (PreEscaped("
+                    
+            <div class=\"_88x31s\">
+                <span class=\"sr-only\">Miscellaneous links:</span>
+                <a href=\"/\">
+                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/j0.gif\"
+                         alt=\"Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.\">
+                </a>
+
+                <a href=\"https://www.php.net\">
+                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/php.gif\" alt=\"Powered by PHP\">
+                </a>
+                <a href=\"https://brainmade.org\">
+                    <div style=\"display: flex; padding: 3px; background-color: #000\">
+                        <img class=\"raw\" alt=\"The Brainmade Mark\" src=\"/static/badges/brainmade.svg\" width=82 height=25>
+                    </div>
+                </a>
+            </div>
+                "))
+        }
+    }
+}
+
 pub fn navbar(current_endpoint: &str) -> Markup {
     let items = vec![
         ("index", "/", "j0.lol"),
