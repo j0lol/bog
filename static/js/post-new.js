@@ -20,6 +20,37 @@ function enableTab(id) {
   };
 }
 
+class SpeechBoxElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const shadow = this.attachShadow({ mode: "open" });
+
+    const characterClass = "foo";
+    
+    const dialogBox = document.createElement("div");
+    dialogBox.setAttribute("class", "dialog-box");
+
+    const speechImage = document.createElement("img");
+    speechImage.setAttribute("class", "raw dialog profile");
+    speechImage.setAttribute("width", "120");
+    speechImage.setAttribute("height", "120");
+    speechImage.setAttribute("src", "/static/speech/you.png");
+    speechImage.setAttribute("alt", "poop");
+
+    const speechContent = document.createElement("div");
+    speechContent.setAttribute("class", `dialog speech ${characterClass}`);
+
+    dialogBox.appendChild(speechImage);
+    dialogBox.appendChild(speechContent);
+    shadow.appendChild(dialogBox);
+  }
+}
+
+customElements.define("speech-box", SpeechBoxElement);
+
 enableTab('editor');
 
 const inputTitle = document.querySelector('input[name=\"title\"]');

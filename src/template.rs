@@ -141,7 +141,12 @@ pub enum SpeechCharacter {
     You,
 }
 
-pub fn speech(char: SpeechCharacter, emotion: SpeechEmotion, content: Markup) -> Markup {
+pub struct SpeechDetails {
+    pub class: String,
+    pub alt: String,
+    pub src: String,
+}
+pub fn render_speech(char: SpeechCharacter, emotion: SpeechEmotion) -> SpeechDetails {
     let src = match char {
         SpeechCharacter::Deer => match emotion {
             SpeechEmotion::Neutral => "/static/speech/deer/neutral.png",
@@ -165,6 +170,15 @@ pub fn speech(char: SpeechCharacter, emotion: SpeechEmotion, content: Markup) ->
         SpeechCharacter::You => "you",
     };
 
+    SpeechDetails {
+        class: class.to_owned(),
+        alt: alt.to_owned(),
+        src: src.to_owned(),
+    }
+}
+
+pub fn speech(char: SpeechCharacter, emotion: SpeechEmotion, content: Markup) -> Markup {
+    let SpeechDetails { class, alt, src } = render_speech(char, emotion);
     html! {
         div.dialog-box {
             img.raw.dialog.profile width="120" height="120" src=(src) alt=(alt);

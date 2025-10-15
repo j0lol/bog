@@ -1,10 +1,10 @@
 use std::fs::read_to_string;
 
 use crate::{
-    D, W,
-    template::{footer, header, header_extra, navbar, page, page_article},
+    template::{footer, header, header_extra, navbar, page, page_article, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
 };
 use chrono::{DateTime, Local};
+use lol_html::{element, html_content::ContentType, rewrite_str, HtmlRewriter, RewriteStrSettings, Settings};
 use maud::{Markup, PreEscaped, html};
 use poem::{
     Body, IntoResponse, handler,
@@ -101,6 +101,32 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         })
         .unwrap();
 
+    let contents = rewrite_str(&post.contents, RewriteStrSettings {
+        
+        element_content_handlers: vec![element!("speech-box", |el| {
+            let char = el.get_attribute("character").unwrap_or("deer".to_string());
+            let emotion = el.get_attribute("emotion").unwrap_or("neutral".to_string());
+
+            let SpeechDetails { class, alt, src } = render_speech(match char.as_ref() {
+                "you" => SpeechCharacter::You,
+                "deer" | _ => SpeechCharacter::Deer,
+            }, match emotion.as_ref() {
+                "worried" => SpeechEmotion::Worried,
+                "shocked" => SpeechEmotion::Shocked,
+                "happy" => SpeechEmotion::Happy,
+                "neutral" | _ => SpeechEmotion::Neutral,
+            });
+
+            el.set_tag_name("div")?;
+            el.set_attribute("class", &format!("dialog speech {class}"))?;
+            el.before(&format!(r#"<div class="dialog-box"> <img class="raw dialog profile" width="120" height="120" src="{src}" alt="{alt}"> "#), ContentType::Html);
+            el.after("</div>", ContentType::Html);
+
+            Ok(())
+        })],
+        ..RewriteStrSettings::new()
+    }).unwrap();
+
     {
         let markup = html! {
             // samp {( format!("{post:#?}") )}
@@ -113,7 +139,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
                 time datetime=(post.creation_datetime) { (post.creation_datetime) }
             }
 
-            (PreEscaped(post.contents))
+            (PreEscaped(contents))
         };
         let endpoint = &format!("/blog/{}", post.slug);
         html! {

@@ -20,6 +20,84 @@ function enableTab(id) {
   };
 }
 
+
+class SpeechBoxElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    // const shadow = this.attachShadow({ mode: "open" });
+
+    const char = this.getAttribute("character");
+    const emotion = this.getAttribute("emotion");
+
+    let src = "";
+    let alt = "";
+    switch (char) {
+      case "deer":
+        switch (emotion) {
+          case "worried":
+            src = "/static/speech/deer/sad.png"
+            alt = "drawing of a sad or worried deer, talking to you."
+            break;
+          case "happy":
+            src = "/static/speech/deer/happy.png"
+            alt = "drawing of a happy deer, talking to you."
+            break;
+          case "shocked":
+            src = "/static/speech/deer/shock.png"
+            alt = "drawing of a shocked deer, talking to you." 
+            break;
+
+          case "neutral":
+          default:
+            src = "/static/speech/deer/neutral.png"
+            alt = "drawing of a deer, talking to you."
+            break;
+        }
+        break;
+      case "you":
+        src = "/static/speech/you.png"
+        alt = "drawing of you, smiling"
+        break;
+    }
+  
+    const characterClass = "foo";
+
+    const slot = document.createElement("slot");
+    
+    const dialogBox = document.createElement("div");
+    dialogBox.setAttribute("class", "dialog-box");
+
+    const speechImage = document.createElement("img");
+    speechImage.setAttribute("class", "raw dialog profile");
+    speechImage.setAttribute("width", "120");
+    speechImage.setAttribute("height", "120");
+    speechImage.setAttribute("src", "/static/speech/you.png");
+    speechImage.setAttribute("alt", "poop");
+
+    const speechContent = document.createElement("div");
+    speechContent.setAttribute("class", `dialog speech ${characterClass}`);
+
+    speechContent.appendChild(slot);
+    dialogBox.appendChild(speechImage);
+    dialogBox.appendChild(speechContent);
+    
+    // blablalba
+    const contents = this.innerHTML;
+    this.innerHTML = `
+    <div class="dialog-box">
+      <img width="120" height="120" class="raw dialog profile" src="${src}" alt="${alt}">
+      <div class="dialog speech ${char}">
+        ${contents}
+      </div>
+    </div>`;
+  }
+}
+
+customElements.define("speech-box", SpeechBoxElement);
+
 enableTab('editor');
 
 const inputTitle = document.querySelector('input[name=\"title\"]');
