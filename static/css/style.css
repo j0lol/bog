@@ -699,3 +699,8 @@ pre[lang="ansi"] {
     --teal: rgb(148 226 213);
     --black: #6c7086;
 }
+
+span.emoji-icon {
+    padding-right: 0.20em;
+    padding-left: 0.20rem;
+}

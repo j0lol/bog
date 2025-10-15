@@ -14,7 +14,7 @@ const ISO8601_DATE: &str = "%Y-%m-%dT%H:%M";
 
 fn clock_icon() -> Markup {
     html! {
-        ( "🕒" )
+        span.emoji-icon {( "🕒" )}
     }
 }
 
