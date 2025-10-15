@@ -50,6 +50,8 @@ pub fn footer() -> Markup {
                 button .subtle.clickme #login-button { "auth" }
                 span .subtle {" • "}
                 a .subtle.clickme href="/blog/new" { "new" }
+                span .subtle {" • "}
+                button .subtle.clickme #edit-button { "edit" }
             }
 
             (PreEscaped("
