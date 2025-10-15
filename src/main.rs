@@ -5,11 +5,11 @@ pub mod template;
 
 use crate::{
     other_pages::{contact, index, projects},
-    post::{list_posts, new_post, submit_new_post, update_draft, view_post},
+    post::{list_posts, login, new_post, submit_new_post, update_draft, view_post},
 };
 use poem::{
     EndpointExt, Route, Server, endpoint::StaticFilesEndpoint, get, listener::TcpListener,
-    web::Data,
+    middleware::CookieJarManager, web::Data,
 };
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
@@ -30,7 +30,9 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/blog/new", get(new_post).post(submit_new_post))
         .at("/blog/new/sync", poem::post(update_draft))
         .at("/blog/:slug", get(view_post))
+        .at("/login", poem::post(login))
         .nest("/static", StaticFilesEndpoint::new("./static/"))
+        .with(CookieJarManager::new())
         .data(conn.clone());
 
     Server::new(TcpListener::bind("0.0.0.0:3000"))

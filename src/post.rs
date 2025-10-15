@@ -1,12 +1,18 @@
+use std::fs::read_to_string;
+
 use crate::{
     D, W,
-    template::{footer, header, navbar, page, page_article},
+    template::{footer, header, header_extra, navbar, page, page_article},
 };
 use chrono::{DateTime, Local};
 use maud::{Markup, PreEscaped, html};
 use poem::{
-    IntoResponse, handler,
-    web::{Data, Form, Json, Path, Redirect},
+    Body, IntoResponse, handler,
+    http::StatusCode,
+    web::{
+        Data, Form, Json, Path, Redirect,
+        cookie::{Cookie, CookieJar},
+    },
 };
 use serde::Deserialize;
 
@@ -87,10 +93,11 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         })
         .unwrap();
 
-    page_article(
-        html! {
+    {
+        let markup = html! {
             h1.blog-head { (post.title)}
-            span.blog-subhead { em { "subtitle" }}
+            @let subtitle = post.subtitle.unwrap_or("".to_string());
+            span.blog-subhead { em { (subtitle) }}
             hr.frontmatter;
             p.blog-publish {
                 ( clock_icon() )
@@ -98,13 +105,49 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
             }
 
             (PreEscaped(post.contents))
-        },
-        &format!("/blog/{}", post.slug),
-    )
+        };
+        let endpoint = &format!("/blog/{}", post.slug);
+        html! {
+            ( header_extra(html! { script defer src="/static/js/bsky-comments.js" {} }) )
+            div.wrapper {
+                (navbar(endpoint))
+                article {
+                    (markup)
+                }
+
+                @if post.bsky_uri.is_some() {
+                    section.page {
+                        noop {}
+                        bsky-comments post=[post.bsky_uri] {}
+                    }
+                }
+
+                ( footer() )
+            }
+        }
+    }
+}
+
+fn read_secret() -> String {
+    read_to_string("./.secret").unwrap().trim().to_string()
 }
 
 #[handler]
-pub fn new_post(Data(conn): D<&W>) -> Markup {
+pub async fn login(body: String, cookie_jar: &CookieJar) -> impl IntoResponse {
+    cookie_jar.add(Cookie::new_with_str("secret_pass", body));
+
+    html! {(cookie_jar.get("secret_pass").unwrap())}.into_response()
+}
+
+#[handler]
+pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> impl IntoResponse {
+    // Auth check!
+    let secret = read_secret();
+    match cookie_jar.get("secret_pass") {
+        Some(cookie) if cookie.value_str() == secret => {}
+        _ => return (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+    }
+
     let conn = conn.lock().unwrap();
 
     let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM draft").unwrap();
@@ -128,26 +171,37 @@ pub fn new_post(Data(conn): D<&W>) -> Markup {
             h1 { "Make a new post" }
             form method="POST" {
                 label {
-                    "Title"
+                    "Title: "
                     input name="title" value=(post.title) {}
                 }
-                br;
                 label {
-                    "Slug"
+                    "Slug: "
                     input name="slug" value=(post.slug) {}
                 }
-                br;
                 label {
-                    "dtl"
+                    "dtl: "
                     input name="creation_datetime" type="datetime-local" value=(post.creation_datetime.format(ISO8601_DATE)) {}
                 }
+                label {
+                    "Subtitle: "
+                    input name="subtitle" value=[post.subtitle] {}
+                }
+                label {
+                    "Category: "
+                    input name="category" value=[post.category] {}
+                }
+                label {
+                    "bsky_uri:  "
+                    input name="bsky_uri" value=[post.bsky_uri] {}
+                    a href="https://pdsls.dev" {"pdsls"}
+                }
+                br;
                 br;
                 div style="display: flex; flex-direction: row; gap: 0.5rem; height: 100%; width: 100%; " {
 
                     textarea #editor name="contents" style="width: 100%; height: 50ch" { (post.contents) }
                     div #editorPreview style="border: 1px solid red; padding: 0 0.5rem; background-color: var(--bg-surface1); width: 100%" { "hii :3" }
                 }
-
                 br;
                 span { "Your draft is auto saved..." }
 
@@ -159,7 +213,7 @@ pub fn new_post(Data(conn): D<&W>) -> Markup {
 
             script type="module" src="/static/js/post-new.js" {}
         }
-    }
+    }.into_response()
 }
 
 #[derive(Deserialize)]
@@ -175,9 +229,17 @@ struct SubmitNewPostForm {
 
 #[handler]
 pub fn submit_new_post(
+    cookie_jar: &CookieJar,
     Form(form): Form<SubmitNewPostForm>,
     Data(conn): D<&W>,
 ) -> impl IntoResponse {
+    // Auth check!
+    let secret = read_secret();
+    match cookie_jar.get("secret_pass") {
+        Some(cookie) if cookie.value_str() == secret => {}
+        _ => return (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+    }
+
     let conn = conn.lock().unwrap();
 
     let creation_datetime =
@@ -198,11 +260,22 @@ pub fn submit_new_post(
     ))
     .expect("failed query");
 
-    Redirect::see_other(format!("/blog/{}", form.slug))
+    Redirect::see_other(format!("/blog/{}", form.slug)).into_response()
 }
 
 #[handler]
-pub fn update_draft(Json(form): Json<SubmitNewPostForm>, Data(conn): D<&W>) {
+pub fn update_draft(
+    cookie_jar: &CookieJar,
+    Json(form): Json<SubmitNewPostForm>,
+    Data(conn): D<&W>,
+) -> impl IntoResponse {
+    // Auth check!
+    let secret = read_secret();
+    match cookie_jar.get("secret_pass") {
+        Some(cookie) if cookie.value_str() == secret => {}
+        _ => return (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+    }
+
     let conn = conn.lock().unwrap();
 
     let creation_datetime =
@@ -234,4 +307,6 @@ pub fn update_draft(Json(form): Json<SubmitNewPostForm>, Data(conn): D<&W>) {
         creation_datetime,
     ))
     .expect("failed query");
+
+    return StatusCode::OK.into_response();
 }

@@ -25,12 +25,17 @@ enableTab('editor');
 const inputTitle = document.querySelector('input[name=\"title\"]');
 const inputSlug = document.querySelector('input[name=\"slug\"]');
 const inputDt = document.querySelector('input[name=\"creation_datetime\"]');
+const inputSubtitle = document.querySelector('input[name=\"subtitle\"]');
+const inputCategory = document.querySelector('input[name=\"category\"]');
+const inputBskyUri = document.querySelector('input[name=\"bsky_uri\"]');
+
 const editor = document.querySelector('#editor');
 const editorPreview = document.querySelector('#editorPreview');
 
 function preview() {
   editorPreview.innerHTML = `
-    <h1>${inputTitle.value}</h1>
+    <h1 class="blog-head">${inputTitle.value}</h1>
+    <span class="blog-subhead"><em>${inputSubtitle.value}</em></span>
     <hr class='frontmatter'>
     <p class='blog-publish'>
       🕒 ${inputDt.value}
@@ -50,12 +55,15 @@ async function syncDraft() {
       title: inputTitle.value,
       slug: inputSlug.value,
       contents: editor.value,
-      creation_datetime: inputDt.value
+      creation_datetime: inputDt.value,
+      subtitle: inputSubtitle.value != "" ? inputSubtitle.value : null,
+      category: inputCategory.value != "" ? inputCategory.value : null,
+      bsky_uri: inputBskyUri.value != "" ? inputBskyUri.value : null,
     }),
   });
 }
 
-[editor, inputTitle, inputSlug, inputDt].forEach((el) => {
+[editor, inputTitle, inputSubtitle, inputSlug, inputDt].forEach((el) => {
   el.addEventListener('input', (event) => {
     preview();
     syncDraft();

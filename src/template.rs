@@ -16,6 +16,8 @@ pub fn header_extra(markup: Markup) -> Markup {
             link rel="stylesheet" type="text/css" href="/static/css/nav.css";
             link rel="stylesheet" type="text/css" href="/static/css/dialog.css";
 
+            script type="module" src="/static/js/login.js" defer {}
+
             meta name="theme-color" content="#b497ee";
             meta name="apple-mobile-web-app-status-bar-style" content="#b497ee";
 
@@ -34,7 +36,7 @@ pub fn header_extra(markup: Markup) -> Markup {
 pub fn footer() -> Markup {
     html! {
         footer #page-footer {
-            div.tablet-hide {
+            div {
                 span {
                     "This website is running on "
                     a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)"
@@ -44,7 +46,12 @@ pub fn footer() -> Markup {
                     { samp { (env!("VERGEN_GIT_SHA")[..8]) } " (" (env!("VERGEN_GIT_COMMIT_DATE")) ")" }
                     "."
                 }
+                br;
+                button .subtle.clickme #login-button { "auth" }
+                span .subtle {" • "}
+                a .subtle.clickme href="/blog/new" { "new" }
             }
+
             (PreEscaped("
             <div class=\"_88x31s\">
                 <span class=\"sr-only\">Miscellaneous links:</span>

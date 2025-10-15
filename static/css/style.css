@@ -218,6 +218,7 @@ article {
             width: 100%;
             margin: 0 auto;
             border: none;
+            box-shadow: none;
         }
     }
 
@@ -425,14 +426,13 @@ footer#page-footer {
 
     @media (width <= 48rem) {
         & {
-            flex-direction: row-reverse;
+            flex-direction: column;
         }
     }
 
     @media (width <= 27rem) {
         & {
             padding: 0.5em;
-            font-size: 2em;
         }
     }
 }
@@ -480,11 +480,6 @@ div._88x31s {
 @media (width <=27rem) {
     .mobile-hide {
         display: inherit;
-    }
-
-    footer#page-footer {
-        padding: 0.5em;
-        font-size: 2em;
     }
 }
 
@@ -703,4 +698,16 @@ pre[lang="ansi"] {
 span.emoji-icon {
     padding-right: 0.20em;
     padding-left: 0.20rem;
+}
+
+.subtle {
+    background: none;
+    border: none;
+    font-size: 0.8em;
+    padding: 0;
+    color: rgba(34, 30, 46, 0.3) !important;
+}
+.subtle.clickme {
+    text-decoration: underline;
+    cursor: pointer;
 }
