@@ -304,7 +304,14 @@ pub fn submit_new_post(
 
 
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
-    chrono::DateTime::parse_from_rfc3339(&datestring).unwrap_or(chrono::DateTime::UNIX_EPOCH.into())
+    match chrono::DateTime::parse_from_rfc3339(&datestring) {
+        Ok(dt) => dt,
+        Err(e) => {
+            println!("Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH.");
+
+            chrono::DateTime::UNIX_EPOCH.into()            
+        }
+    }
 }
 
 #[handler]
