@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use crate::{
     template::{footer, header, header_extra, navbar, page, page_article, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
 };
-use chrono::{DateTime, FixedOffset, Local, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, TimeZone, Utc};
 use lol_html::{element, html_content::ContentType, rewrite_str, HtmlRewriter, RewriteStrSettings, Settings};
 use maud::{Markup, PreEscaped, html};
 use poem::{
@@ -302,8 +302,37 @@ pub fn submit_new_post(
     Redirect::see_other(format!("/blog/{}", form.slug)).into_response()
 }
 
+fn eng_ordinal_suffix(n: usize) -> String {
+    // https://stackoverflow.com/a/31615643
+    const S: [&str; 4] = ["th", "st", "nd", "rd"];
+    let v: usize = n % 100;
+
+    let a = S.get((v.overflowing_sub(20).0) % 10);
+    let b = S.get(v);
+    let c = S.get(0);
+
+    a.or(b).or(c).unwrap().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::post::eng_ordinal_suffix;
+
+    #[test]
+    fn testsuffix() {
+        let nums = [0,1,2,3,4,10,11,12,13,14,20,21,22,100,101,111];
+        let nums_ordinal = [ "0th", "1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "14th", "20th", "21st", "22nd", "100th", "101st", "111th", ];
+        
+        for (x, y) in nums.iter().zip(nums_ordinal) {
+            let x_ = format!("{x}{}", eng_ordinal_suffix(*x));
+            assert_eq!(x_, y)
+        }
+    }
+}
+
 fn format_date(date: chrono::DateTime<Local>) -> String {
-    date.format("%F %j%S, %Y").to_string()
+    let sfx = eng_ordinal_suffix(date.day() as usize);
+    date.format(&format!("%B %u{sfx}, %Y")).to_string()
 }
 
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
