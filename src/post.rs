@@ -307,9 +307,20 @@ fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
         Ok(dt) => dt,
         Err(e) => {
-            println!("Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH.");
+            println!("Dt parse error: {e}. String: {datestring}. Attempting fallback ISO8601 parsing.");
+            match chrono::DateTime::parse_from_str(&datestring, ISO8601_DATE) {
+                Ok(dt) => {
+                    println!("Success parsing ISO8601 date.");
 
-            chrono::DateTime::UNIX_EPOCH.into()            
+                    dt
+                },
+                Err(e) => {
+                    println!("Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH.");
+
+                    chrono::DateTime::UNIX_EPOCH.into()            
+                },
+            }
+
         }
     }
 }
