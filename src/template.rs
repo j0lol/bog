@@ -48,6 +48,7 @@ pub fn footer() -> Markup {
                         "."
                     }
                     br;
+                    span .subtle { "This footer contains words for your enjoyment. • "}
                     button .subtle.clickme #login-button { "auth" }
                     span .subtle {" • "}
                     a .subtle.clickme href="/blog/new" { "new" }

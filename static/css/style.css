@@ -720,6 +720,10 @@ span.emoji-icon {
 .subtle.clickme {
     text-decoration: underline;
     cursor: pointer;
+
+    &:hover {
+        text-decoration: none;
+    }
 }
 
 #editorWrapper {
