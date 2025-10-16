@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use crate::{
     template::{footer, header, header_extra, navbar, page, page_article, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
 };
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset, Local, NaiveDateTime, TimeZone, Utc};
 use lol_html::{element, html_content::ContentType, rewrite_str, HtmlRewriter, RewriteStrSettings, Settings};
 use maud::{Markup, PreEscaped, html};
 use poem::{
@@ -307,12 +307,12 @@ fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
         Ok(dt) => dt,
         Err(e) => {
-            println!("Dt parse error: {e}. String: {datestring}. Attempting fallback ISO8601 parsing.");
-            match chrono::DateTime::parse_from_str(&datestring, ISO8601_DATE) {
+            println!("Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing.");
+            match NaiveDateTime::parse_from_str(&datestring, ISO8601_DATE).map(|ndt| DateTime::<Utc>::from_naive_utc_and_offset(ndt, Utc)) {
                 Ok(dt) => {
                     println!("Success parsing ISO8601 date.");
 
-                    dt
+                    dt.into()
                 },
                 Err(e) => {
                     println!("Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH.");
