@@ -708,6 +708,7 @@ pre[lang="ansi"] {
 span.emoji-icon {
     padding-right: 0.20em;
     padding-left: 0.20rem;
+    font-style: normal;
 }
 
 .subtle {
