@@ -143,7 +143,10 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         };
         let endpoint = &format!("/blog/{}", post.slug);
         html! {
-            ( header_extra(html! { script defer src="/static/js/bsky-comments.js" {} }) )
+            ( header_extra(html! {
+                script defer src="/static/js/bsky-comments.js" {}
+                script defer src="/static/js/footnotes.js" {}
+            }) )
             div.wrapper {
                 (navbar(endpoint))
                 article {
@@ -201,7 +204,9 @@ pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> impl IntoResponse 
         .unwrap();
 
     html! {
-        ( header() )
+        ( header_extra(html! {
+            script defer src="/static/js/footnotes.js" {}
+        }) )
         body {
             h1 { "Make a new post" }
             form method="POST" {
@@ -377,7 +382,9 @@ pub fn edit_post(
         .unwrap();
 
     html! {
-        ( header() )
+        ( header_extra(html! {
+            script defer src="/static/js/footnotes.js" {}
+        }) )
         body {
             h1 { "Edit this post" }
             form method="POST" {
