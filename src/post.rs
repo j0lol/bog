@@ -247,6 +247,7 @@ pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> impl IntoResponse 
             }
 
             script type="module" src="/static/js/post-new.js" {}
+            script type="module" src="/static/js/post-preview.js" {}
         }
     }.into_response()
 }
@@ -423,6 +424,7 @@ pub fn edit_post(
             }
 
             script type="module" src="/static/js/post-edit.js" {}
+            script type="module" src="/static/js/post-preview.js" {}
         }
     }.into_response()
 }
