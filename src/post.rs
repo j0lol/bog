@@ -141,7 +141,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
     {
         let markup = html! {
             // samp {( format!("{post:#?}") )}
-            h1.blog-head { (PreEscaped(post.title))}
+            h1.blog-head { (PreEscaped(post.title.clone() ))}
             @let subtitle = post.subtitle.unwrap_or("".to_string());
             span.blog-subhead { em { (subtitle) }}
             hr.frontmatter;
@@ -157,6 +157,8 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
             ( header_extra(html! {
                 script defer src="/static/js/bsky-comments.js" {}
                 script defer src="/static/js/footnotes.js" {}
+
+                meta property="og:title" content={(post.title) " — Jo's Blog"};
             }) )
             div.wrapper {
                 (navbar(endpoint))

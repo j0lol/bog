@@ -1,7 +1,9 @@
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 
 pub fn header() -> Markup {
-    header_extra(html! {})
+    header_extra(html! {
+        meta property="og:title" content="j0.lol";
+    })
 }
 
 pub fn header_extra(markup: Markup) -> Markup {
