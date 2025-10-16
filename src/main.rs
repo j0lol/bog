@@ -15,7 +15,10 @@ use poem::{
     middleware::CookieJarManager, web::Data,
 };
 use rusqlite::Connection;
-use std::sync::{Arc, Mutex};
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 
 type WrappedConnection = Arc<Mutex<Connection>>;
 type W = WrappedConnection;
@@ -39,7 +42,9 @@ async fn main() -> Result<(), std::io::Error> {
         .with(CookieJarManager::new())
         .data(conn.clone());
 
-    Server::new(TcpListener::bind("0.0.0.0:3000"))
+    let port = env::var("PORT").unwrap_or("3000".to_string());
+
+    Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
         .name("hello-world")
         .run(app)
         .await
