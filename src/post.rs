@@ -1,13 +1,12 @@
 use std::fs::read_to_string;
-
 use crate::{
-    template::{footer, header, header_extra, navbar, page, page_article, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
+    template::{footer, header_extra, navbar, page, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
 };
-use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, TimeZone, Utc};
-use lol_html::{element, html_content::ContentType, rewrite_str, HtmlRewriter, RewriteStrSettings, Settings};
+use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
+use lol_html::{element, html_content::ContentType, rewrite_str, RewriteStrSettings};
 use maud::{Markup, PreEscaped, html};
 use poem::{
-    Body, IntoResponse, handler,
+    IntoResponse, handler,
     http::StatusCode,
     web::{
         Data, Form, Json, Path, Redirect,
@@ -25,18 +24,17 @@ fn clock_icon() -> Markup {
 }
 
 #[derive(Deserialize, Debug)]
-struct Post {
-    title: String,
-    contents: String,
-    slug: String,
-    subtitle: Option<String>,
-    category: Option<String>,
-    bsky_uri: Option<String>,
-    creation_datetime: DateTime<Local>,
+pub struct Post {
+    pub title: String,
+    pub contents: String,
+    pub slug: String,
+    pub subtitle: Option<String>,
+    pub category: Option<String>,
+    pub bsky_uri: Option<String>,
+    pub creation_datetime: DateTime<Local>,
 }
 
-#[handler]
-pub fn list_posts(Data(conn): D<&W>) -> Markup {
+pub fn fetch_all_posts(conn: &W) -> Vec<Post> {
     let conn = conn.lock().unwrap();
 
     let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM post").unwrap();
@@ -55,19 +53,29 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
         .unwrap()
         .flatten();
 
-    let mut post_iter = post_iter.collect::<Vec<_>>();
-    post_iter.sort_by(|a, b| {
+    let mut posts = post_iter.collect::<Vec<_>>();
+    posts.sort_by(|a, b| {
         a.creation_datetime
             .partial_cmp(&b.creation_datetime)
             .unwrap()
     });
-    post_iter.reverse(); // *reverse chronological*
+    posts.reverse(); // *reverse chronological*
 
+    posts
+}
+
+#[handler]
+pub fn list_posts(Data(conn): D<&W>) -> Markup {
+
+    let posts = fetch_all_posts(conn);
     page(
         html! {
             h1 { "Post list" }
+            p {
+                "All posts in reverse chronological order. " a href="/feed" { "Atom/RSS feed" } "."
+            }
             ul {
-                @for post in post_iter {
+                @for post in posts {
                 li  {
                     a href={"/blog/" (post.slug) } { (PreEscaped(post.title)) }
                     br;
@@ -110,12 +118,14 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
 
             let SpeechDetails { class, alt, src } = render_speech(match char.as_ref() {
                 "you" => SpeechCharacter::You,
-                "deer" | _ => SpeechCharacter::Deer,
+                "deer" => SpeechCharacter::Deer,
+                _ => SpeechCharacter::Deer,
             }, match emotion.as_ref() {
                 "worried" => SpeechEmotion::Worried,
                 "shocked" => SpeechEmotion::Shocked,
                 "happy" => SpeechEmotion::Happy,
-                "neutral" | _ => SpeechEmotion::Neutral,
+                "neutral" => SpeechEmotion::Neutral,
+                _ => SpeechEmotion::Neutral,
             });
 
             el.set_tag_name("div")?;
@@ -309,7 +319,7 @@ fn eng_ordinal_suffix(n: usize) -> String {
 
     let a = S.get((v.overflowing_sub(20).0) % 10);
     let b = S.get(v);
-    let c = S.get(0);
+    let c = S.first();
 
     a.or(b).or(c).unwrap().to_string()
 }
@@ -400,7 +410,7 @@ pub fn update_draft(
     ))
     .expect("failed query");
 
-    return StatusCode::OK.into_response();
+    StatusCode::OK.into_response()
 }
 
 #[handler]
@@ -488,7 +498,7 @@ pub fn edit_post(
 
 fn clean(a: Option<String>) -> Option<String> {
     match a {
-        Some(x) if x == "".to_string() => None,
+        Some(x) if x.is_empty() => None,
         x => x,
     }
 }

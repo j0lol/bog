@@ -1,15 +1,7 @@
-use crate::{
-    post::{list_posts, new_post, submit_new_post, update_draft, view_post},
-    template::{SpeechCharacter, SpeechEmotion, footer, header, navbar, page, speech},
-};
+use crate::template::{SpeechCharacter, SpeechEmotion, footer, header, navbar, page, speech};
 use maud::{Markup, PreEscaped, html};
-use poem::{
-    EndpointExt, Route, Server, endpoint::StaticFilesEndpoint, get, handler, listener::TcpListener,
-    web::Data,
-};
+use poem::handler;
 use rand::seq::SliceRandom;
-use rusqlite::Connection;
-use std::sync::{Arc, Mutex};
 
 #[handler]
 pub fn index() -> Markup {
@@ -335,13 +327,13 @@ pub fn projects() -> Markup {
                         span.description { (description) }
                     }
                     .links {
-                        @if play != "" {
+                        @if !play.is_empty() {
                             a href=(play) { "Play" }
                         }
-                        @if url != "" {
+                        @if !url.is_empty() {
                             a href=(report) { "Source" }
                         }
-                        @if report != "" {
+                        @if !report.is_empty() {
                             a href=(report) { "Report" }
                         }
                     }
