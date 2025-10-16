@@ -314,8 +314,7 @@ pub fn update_draft(
 
     let conn = conn.lock().unwrap();
 
-    let creation_datetime =
-        chrono::NaiveDateTime::parse_from_str(&form.creation_datetime, "%Y-%m-%dT%H:%M")
+    let creation_datetime = chrono::DateTime::parse_from_rfc3339(&form.creation_datetime)
             .expect("bad datetime");
 
     let mut stmt = conn
@@ -451,8 +450,7 @@ pub fn submit_edited_post(
 
     let conn = conn.lock().unwrap();
 
-    let creation_datetime =
-        chrono::NaiveDateTime::parse_from_str(&form.creation_datetime, "%Y-%m-%dT%H:%M")
+    let creation_datetime = chrono::DateTime::parse_from_rfc3339(&form.creation_datetime)
             .expect("bad datetime");
 
     let mut stmt = conn
