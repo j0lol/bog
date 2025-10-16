@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use crate::{
     template::{footer, header, header_extra, navbar, page, page_article, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
 };
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset, Local};
 use lol_html::{element, html_content::ContentType, rewrite_str, HtmlRewriter, RewriteStrSettings, Settings};
 use maud::{Markup, PreEscaped, html};
 use poem::{
@@ -283,9 +283,7 @@ pub fn submit_new_post(
 
     let conn = conn.lock().unwrap();
 
-    let creation_datetime =
-        chrono::NaiveDateTime::parse_from_str(&form.creation_datetime, "%Y-%m-%dT%H:%M")
-            .expect("bad datetime");
+    let creation_datetime = parse_date(form.creation_datetime);
 
     let mut stmt = conn
         .prepare("INSERT INTO post (title, contents, slug, subtitle, category, bsky_uri, creation_datetime) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
@@ -304,6 +302,11 @@ pub fn submit_new_post(
     Redirect::see_other(format!("/blog/{}", form.slug)).into_response()
 }
 
+
+fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
+    chrono::DateTime::parse_from_rfc3339(&datestring).unwrap_or(chrono::DateTime::UNIX_EPOCH.into())
+}
+
 #[handler]
 pub fn update_draft(
     cookie_jar: &CookieJar,
@@ -319,8 +322,7 @@ pub fn update_draft(
 
     let conn = conn.lock().unwrap();
 
-    let creation_datetime = chrono::DateTime::parse_from_rfc3339(&form.creation_datetime)
-            .expect("bad datetime");
+    let creation_datetime = parse_date(form.creation_datetime);
 
     let mut stmt = conn
         .prepare(
@@ -456,8 +458,7 @@ pub fn submit_edited_post(
 
     let conn = conn.lock().unwrap();
 
-    let creation_datetime = chrono::DateTime::parse_from_rfc3339(&form.creation_datetime)
-            .expect("bad datetime");
+    let creation_datetime = parse_date(form.creation_datetime);
 
     let mut stmt = conn
         .prepare(
