@@ -61,6 +61,7 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
             .partial_cmp(&b.creation_datetime)
             .unwrap()
     });
+    post_iter.reverse(); // *reverse chronological*
 
     page(
         html! {
