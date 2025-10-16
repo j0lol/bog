@@ -69,12 +69,12 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
             ul {
                 @for post in post_iter {
                 li  {
-                    a href={"/blog/" (post.slug) } { (post.title) }
+                    a href={"/blog/" (post.slug) } { (PreEscaped(post.title)) }
                     br;
                     span {
                         (clock_icon())
                     }
-                    time datetime=(post.creation_datetime) { (post.creation_datetime) }
+                    time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
                 }
                 }
             }
@@ -131,13 +131,13 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
     {
         let markup = html! {
             // samp {( format!("{post:#?}") )}
-            h1.blog-head { (post.title)}
+            h1.blog-head { (PreEscaped(post.title))}
             @let subtitle = post.subtitle.unwrap_or("".to_string());
             span.blog-subhead { em { (subtitle) }}
             hr.frontmatter;
             p.blog-publish {
                 ( clock_icon() )
-                time datetime=(post.creation_datetime) { (post.creation_datetime) }
+                time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
             }
 
             (PreEscaped(contents))
@@ -302,6 +302,9 @@ pub fn submit_new_post(
     Redirect::see_other(format!("/blog/{}", form.slug)).into_response()
 }
 
+fn format_date(date: chrono::DateTime<Local>) -> String {
+    date.format("%F %j%S, %Y").to_string()
+}
 
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
