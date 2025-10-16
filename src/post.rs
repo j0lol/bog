@@ -142,7 +142,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         let markup = html! {
             // samp {( format!("{post:#?}") )}
             h1.blog-head { (PreEscaped(post.title.clone() ))}
-            @let subtitle = post.subtitle.unwrap_or("".to_string());
+            @let subtitle = post.subtitle.clone().unwrap_or("".to_string());
             span.blog-subhead { em { (subtitle) }}
             hr.frontmatter;
             p.blog-publish {
@@ -159,6 +159,13 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
                 script defer src="/static/js/footnotes.js" {}
 
                 meta property="og:title" content={(post.title) " — Jo's Blog"};
+
+                meta property="og:description" content={
+                    (if let Some(subtitle) = post.subtitle {
+                        format!("{subtitle}  — ")
+                    } else { "".to_string() })
+                    "Posted on " (format_date(post.creation_datetime))
+                };
             }) )
             div.wrapper {
                 (navbar(endpoint))
