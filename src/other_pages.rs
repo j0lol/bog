@@ -150,9 +150,11 @@ pub fn index() -> Markup {
                     ("mae.png", "mae", "https://mae.wtf/", ),
                 ];
 
-                @for (file, alt, link) in btns {
-                    a href=(link) {
-                        img.raw src={"/static/badges/" (file)} alt=(alt);
+                ._88x31s {
+                    @for (file, alt, link) in btns {
+                        a href=(link) {
+                            img.raw src={"/static/badges/" (file)} alt=(alt);
+                        }
                     }
                 }
             }

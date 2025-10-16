@@ -237,10 +237,9 @@ pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> impl IntoResponse 
                 }
                 br;
                 br;
-                div style="display: flex; flex-direction: row; gap: 0.5rem; height: 100%; width: 100%; " {
-
-                    textarea #editor name="contents" style="width: 100%; height: 50ch" { (post.contents) }
-                    div #editorPreview style="border: 1px solid red; padding: 0 0.5rem; background-color: var(--bg-surface1); width: 100%" { "hii :3" }
+                div #editorWrapper {
+                    textarea #editor name="contents" { (post.contents) }
+                    div #editorPreview { "hii :3" }
                 }
                 br;
                 span { "Your draft is auto saved..." }
@@ -415,10 +414,9 @@ pub fn edit_post(
                 }
                 br;
                 br;
-                div style="display: flex; flex-direction: row; gap: 0.5rem; height: 100%; width: 100%; " {
-
-                    textarea #editor name="contents" style="width: 100%; height: 50ch" { (post.contents) }
-                    div #editorPreview style="border: 1px solid red; padding: 0 0.5rem; background-color: var(--bg-surface1); width: 100%" { "hii :3" }
+                div #editorWrapper {
+                    textarea #editor name="contents" { (post.contents) }
+                    div #editorPreview { "hii :3" }
                 }
                 br;
                 span { "Your edits are not saved automatically." }

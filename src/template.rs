@@ -36,42 +36,45 @@ pub fn header_extra(markup: Markup) -> Markup {
 pub fn footer() -> Markup {
     html! {
         footer #page-footer {
-            div {
-                span {
-                    "This website is running on "
-                    a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)"
-                    { samp { (env!("CARGO_CRATE_NAME")) } }
-                    " "
-                    a href={"https://tangled.org/@j0.lol/bog/commit/" (env!("VERGEN_GIT_SHA"))} style="color: var(--fg-header); font-size: 0.8rem;"
-                    { samp { (env!("VERGEN_GIT_SHA")[..8]) } " (" (env!("VERGEN_GIT_COMMIT_DATE")) ")" }
-                    "."
+            .inner {
+                div {
+                    span {
+                        "This website is running on "
+                        a href="https://tangled.org/@j0.lol/bog" style="color: var(--fg-header)"
+                        { samp { (env!("CARGO_CRATE_NAME")) } }
+                        " "
+                        a href={"https://tangled.org/@j0.lol/bog/commit/" (env!("VERGEN_GIT_SHA"))} style="color: var(--fg-header); font-size: 0.8rem;"
+                        { samp { (env!("VERGEN_GIT_SHA")[..8]) } " (" (env!("VERGEN_GIT_COMMIT_DATE")) ")" }
+                        "."
+                    }
+                    br;
+                    button .subtle.clickme #login-button { "auth" }
+                    span .subtle {" • "}
+                    a .subtle.clickme href="/blog/new" { "new" }
+                    span .subtle {" • "}
+                    button .subtle.clickme #edit-button { "edit" }
                 }
-                br;
-                button .subtle.clickme #login-button { "auth" }
-                span .subtle {" • "}
-                a .subtle.clickme href="/blog/new" { "new" }
-                span .subtle {" • "}
-                button .subtle.clickme #edit-button { "edit" }
+
+                (PreEscaped("
+                <div class=\"_88x31s\">
+                    <span class=\"sr-only\">Miscellaneous links:</span>
+                    <a href=\"/\">
+                        <img class=\"raw\" width=88 height=31 src=\"/static/badges/j0.gif\"
+                             alt=\"Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.\">
+                    </a>
+
+                    <a href=\"https://maud.lambda.xyz\">
+                        <img class=\"raw\" width=88 height=31 src=\"/static/badges/maud.png\" alt=\"Powered by Maud\">
+                    </a>
+                    <a href=\"https://brainmade.org\">
+                        <div style=\"display: flex; padding: 3px; background-color: #000\">
+                            <img class=\"raw\" alt=\"The Brainmade Mark\" src=\"/static/badges/brainmade.svg\" width=82 height=25>
+                        </div>
+                    </a>
+                </div>
+                "))
+
             }
-
-            (PreEscaped("
-            <div class=\"_88x31s\">
-                <span class=\"sr-only\">Miscellaneous links:</span>
-                <a href=\"/\">
-                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/j0.gif\"
-                         alt=\"Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.\">
-                </a>
-
-                <a href=\"https://maud.lambda.xyz\">
-                    <img class=\"raw\" width=88 height=31 src=\"/static/badges/maud.png\" alt=\"Powered by Maud\">
-                </a>
-                <a href=\"https://brainmade.org\">
-                    <div style=\"display: flex; padding: 3px; background-color: #000\">
-                        <img class=\"raw\" alt=\"The Brainmade Mark\" src=\"/static/badges/brainmade.svg\" width=82 height=25>
-                    </div>
-                </a>
-            </div>
-            "))
         }
     }
 }
