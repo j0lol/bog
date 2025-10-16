@@ -75,9 +75,9 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
                 "All posts in reverse chronological order. " a href="/feed" { "Atom/RSS feed" } "."
             }
             ul {
-                @for post in posts {
+                @for post in posts.iter().filter(|p| p.category.is_none()) {
                 li  {
-                    a href={"/blog/" (post.slug) } { (PreEscaped(post.title)) }
+                    a href={"/blog/" (post.slug) } { (PreEscaped(post.title.clone())) }
                     br;
                     span {
                         (clock_icon())
@@ -85,6 +85,21 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
                     time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
                 }
                 }
+            }
+
+            h2 { "Trash" }
+            ul {
+                @for post in posts.iter().filter(|p| p.category == Some("trash".to_string())) {
+                li  {
+                    a href={"/blog/" (post.slug) } { (PreEscaped(post.title.clone())) }
+                    br;
+                    span {
+                        (clock_icon())
+                    }
+                    time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
+                }
+                }
+                
             }
         },
         "/blog",
