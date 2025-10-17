@@ -35,7 +35,7 @@ pub fn index() -> Markup {
                         "I'm Jo. "
                         label #my-pronouns { "My pronouns are " (select_1) }
                         " and "
-                        label { "my gender is" (select_2) }
+                        label { "my gender is " (select_2) }
                     }
 
                     p {
