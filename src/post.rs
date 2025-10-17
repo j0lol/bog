@@ -1,9 +1,12 @@
-use std::fs::read_to_string;
 use crate::{
-    template::{footer, header_extra, navbar, page, render_speech, SpeechCharacter, SpeechDetails, SpeechEmotion}, D, W
+    D, W,
+    template::{
+        SpeechCharacter, SpeechDetails, SpeechEmotion, footer, header_extra, navbar, page,
+        render_speech,
+    },
 };
 use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
-use lol_html::{element, html_content::ContentType, rewrite_str, RewriteStrSettings};
+use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
 use maud::{Markup, PreEscaped, html};
 use poem::{
     IntoResponse, handler,
@@ -14,6 +17,7 @@ use poem::{
     },
 };
 use serde::Deserialize;
+use std::fs::read_to_string;
 
 const ISO8601_DATE: &str = "%Y-%m-%dT%H:%M";
 
@@ -66,7 +70,6 @@ pub fn fetch_all_posts(conn: &W) -> Vec<Post> {
 
 #[handler]
 pub fn list_posts(Data(conn): D<&W>) -> Markup {
-
     let posts = fetch_all_posts(conn);
     page(
         html! {
@@ -99,7 +102,7 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
                     time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
                 }
                 }
-                
+
             }
         },
         "/blog",
@@ -126,7 +129,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
         .unwrap();
 
     let contents = rewrite_str(&post.contents, RewriteStrSettings {
-        
+
         element_content_handlers: vec![element!("speech-box", |el| {
             let char = el.get_attribute("character").unwrap_or("deer".to_string());
             let emotion = el.get_attribute("emotion").unwrap_or("neutral".to_string());
@@ -354,9 +357,12 @@ mod tests {
 
     #[test]
     fn testsuffix() {
-        let nums = [0,1,2,3,4,10,11,12,13,14,20,21,22,100,101,111];
-        let nums_ordinal = [ "0th", "1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "14th", "20th", "21st", "22nd", "100th", "101st", "111th", ];
-        
+        let nums = [0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 100, 101, 111];
+        let nums_ordinal = [
+            "0th", "1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "14th", "20th",
+            "21st", "22nd", "100th", "101st", "111th",
+        ];
+
         for (x, y) in nums.iter().zip(nums_ordinal) {
             let x_ = format!("{x}{}", eng_ordinal_suffix(*x));
             assert_eq!(x_, y)
@@ -366,27 +372,32 @@ mod tests {
 
 fn format_date(date: chrono::DateTime<Local>) -> String {
     let sfx = eng_ordinal_suffix(date.day() as usize);
-    date.format(&format!("%B %u{sfx}, %Y")).to_string()
+    date.format(&format!("%B %d{sfx}, %Y")).to_string()
 }
 
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
         Ok(dt) => dt,
         Err(e) => {
-            println!("Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing.");
-            match NaiveDateTime::parse_from_str(&datestring, ISO8601_DATE).map(|ndt| DateTime::<Utc>::from_naive_utc_and_offset(ndt, Utc)) {
+            println!(
+                "Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing."
+            );
+            match NaiveDateTime::parse_from_str(&datestring, ISO8601_DATE)
+                .map(|ndt| DateTime::<Utc>::from_naive_utc_and_offset(ndt, Utc))
+            {
                 Ok(dt) => {
                     println!("Success parsing ISO8601 date.");
 
                     dt.into()
-                },
+                }
                 Err(e) => {
-                    println!("Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH.");
+                    println!(
+                        "Dt parse error: {e}. String: {datestring}. Falling back to UNIX_EPOCH."
+                    );
 
-                    chrono::DateTime::UNIX_EPOCH.into()            
-                },
+                    chrono::DateTime::UNIX_EPOCH.into()
+                }
             }
-
         }
     }
 }
