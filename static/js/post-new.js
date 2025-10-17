@@ -42,6 +42,7 @@ async function syncDraft() {
 function updatePreview() {
   preview();
   Prism.highlightAll();
+  createFootnotes();
   syncDraft();
 }
 

@@ -23,6 +23,7 @@ function preview() {
 function updatePreview() {
   preview();
   Prism.highlightAll();
+  createFootnotes();
 }
 
 [editor, inputTitle, inputSubtitle, inputSlug, inputDt].forEach((el) => {

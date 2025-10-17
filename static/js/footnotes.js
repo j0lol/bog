@@ -22,11 +22,12 @@ const style = `article {
 footer ol {
   margin-block-end: 0;
 }`;
+
 const styleSheet = document.createElement("style");
 styleSheet.textContent = style;
 document.head.appendChild(styleSheet);
 
-document.addEventListener("DOMContentLoaded", function () {
+function createFootnotes() {
   var footerPairs = document.querySelectorAll("footer > ol > li");
 
   footerPairs.forEach((pair) => {
@@ -47,9 +48,11 @@ document.addEventListener("DOMContentLoaded", function () {
     pair.appendChild(returnLink);
   });
 
-  var articleAnchors = document.querySelectorAll("article a[ref]");
+  var articleAnchors = document.querySelectorAll(
+    "article a[ref], #editorPreview a[ref]",
+  );
 
-  articleAnchors.forEach((anchor, index) => {
+  articleAnchors.forEach((anchor, _index) => {
     let ref = anchor.getAttribute("ref");
     anchor.removeAttribute("ref");
 
@@ -58,4 +61,8 @@ document.addEventListener("DOMContentLoaded", function () {
     anchor.href = "#note_" + ref;
     anchor.setAttribute("aria-labelledby", "notes_heading");
   });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  createFootnotes();
 });
