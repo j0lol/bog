@@ -371,8 +371,8 @@ mod tests {
 }
 
 fn format_date(date: chrono::DateTime<Local>) -> String {
-    let sfx = eng_ordinal_suffix(date.day() as usize);
-    date.format(&format!("%B %d{sfx}, %Y")).to_string()
+    //let sfx = eng_ordinal_suffix(date.day() as usize);
+    date.format(&format!("%B %d, %Y")).to_string()
 }
 
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
