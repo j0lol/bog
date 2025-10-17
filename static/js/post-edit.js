@@ -5,8 +5,8 @@ const inputSubtitle = document.querySelector('input[name=\"subtitle\"]');
 const inputCategory = document.querySelector('input[name=\"category\"]');
 const inputBskyUri = document.querySelector('input[name=\"bsky_uri\"]');
 
-const editor = document.querySelector('#editor');
-const editorPreview = document.querySelector('#editorPreview');
+const editor = document.querySelector("#editor");
+const editorPreview = document.querySelector("#editorPreview");
 
 function preview() {
   editorPreview.innerHTML = `
@@ -20,10 +20,17 @@ function preview() {
   editorPreview.innerHTML += editor.value;
 }
 
+function updatePreview() {
+  preview();
+  Prism.highlightAll();
+}
+
 [editor, inputTitle, inputSubtitle, inputSlug, inputDt].forEach((el) => {
-  el.addEventListener('input', (event) => {
-    preview();
+  el.addEventListener("input", (event) => {
+    updatePreview();
   });
-})
+});
 
 preview();
+
+export { updatePreview };
