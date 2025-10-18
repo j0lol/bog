@@ -196,6 +196,19 @@ class BskyComments extends HTMLElement {
     const author = reply.post.author;
     const text = reply.post.record?.text || "";
 
+    let imgEmbed = ``;
+    if (
+      reply.post.embed != null &&
+      reply.post.embed.$type === "app.bsky.embed.images#view"
+    ) {
+      for (const image of reply.post.embed.images) {
+        const aspectRatio = image.aspectRatio;
+        imgEmbed += `<a href="${image.fullsize}">
+          <img class="thumb" src="${image.thumb}" width="${aspectRatio.width}" height="${aspectRatio.height}" alt="${image.alt}" >
+        </a>`;
+      }
+    }
+
     console.log(reply);
     comment.innerHTML = `
       <div class="author">
@@ -205,6 +218,7 @@ class BskyComments extends HTMLElement {
           <span><b class="author-nickname">${author.displayName ?? author.handle}‭</b> @${author.handle}</span>
           </a>
         <p class="comment-text">${this.escapeHTML(text)}</p>
+        <div class="comment-images">${imgEmbed}</div>
         <a class="noline" href="https://bsky.app/profile/${reply.post.author?.did}/post/${reply.post.uri.split("/").pop()}"><small class="comment-meta">
         ${icon_likes} ${reply.post.likeCount ?? 0} &nbsp; ${icon_reposts} ${reply.post.repostCount ?? 0} &nbsp; ${icon_replies} ${reply.post.replyCount ?? 0} &nbsp; ${icon_external}
         </small></a>
@@ -315,7 +329,7 @@ class BskyComments extends HTMLElement {
             text-decoration: underline;
           }
 
-          img {
+          img:not(.thumb) {
             border-radius: var(--author-avatar-border-radius);
             vertical-align: middle;
             width: 24px;
@@ -343,6 +357,13 @@ class BskyComments extends HTMLElement {
       .comment-text {
         margin: 5px 0;
         white-space: pre-line;
+      }
+      .comment-images {
+        display: flex;
+      }
+      .thumb {
+        width: 100%;
+        max-height: 14rem;
       }
       .comment-meta {
         color: var(--comment-meta-color);
