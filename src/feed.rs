@@ -43,10 +43,11 @@ fn entries(conn: &W) -> Vec<Entry> {
                             },
                         );
 
-                        el.set_tag_name("table")?;
+                        el.set_tag_name("div")?;
                         el.before(
                             &format!(
                                 r#"
+                        <table>
                         <tbody>
                             <td>
                                 <img width="120" height="120" src="{src}" alt="{alt}">
@@ -56,7 +57,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                             ),
                             ContentType::Html,
                         );
-                        el.after("</td></tbody>", ContentType::Html);
+                        el.after("</td></tbody></table>", ContentType::Html);
 
                         Ok(())
                     })],
