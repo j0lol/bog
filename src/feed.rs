@@ -5,7 +5,7 @@ use crate::{
 };
 use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
-use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
+use lol_html::{RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str};
 use poem::{IntoResponse, handler, web::Data};
 
 const HOST: &str = "https://j0.lol";
@@ -24,29 +24,31 @@ fn entries(conn: &W) -> Vec<Entry> {
             let contents = rewrite_str(
                 &post.contents,
                 RewriteStrSettings {
-                    element_content_handlers: vec![element!("speech-box", |el| {
-                        let char = el.get_attribute("character").unwrap_or("deer".to_string());
-                        let emotion = el.get_attribute("emotion").unwrap_or("neutral".to_string());
+                    element_content_handlers: vec![
+                        element!("speech-box", |el| {
+                            let char = el.get_attribute("character").unwrap_or("deer".to_string());
+                            let emotion =
+                                el.get_attribute("emotion").unwrap_or("neutral".to_string());
 
-                        let SpeechDetails { class: _, alt, src } = render_speech(
-                            match char.as_ref() {
-                                "you" => SpeechCharacter::You,
-                                "deer" => SpeechCharacter::Deer,
-                                _ => SpeechCharacter::Deer,
-                            },
-                            match emotion.as_ref() {
-                                "worried" => SpeechEmotion::Worried,
-                                "shocked" => SpeechEmotion::Shocked,
-                                "happy" => SpeechEmotion::Happy,
-                                "neutral" => SpeechEmotion::Neutral,
-                                _ => SpeechEmotion::Neutral,
-                            },
-                        );
+                            let SpeechDetails { class: _, alt, src } = render_speech(
+                                match char.as_ref() {
+                                    "you" => SpeechCharacter::You,
+                                    "deer" => SpeechCharacter::Deer,
+                                    _ => SpeechCharacter::Deer,
+                                },
+                                match emotion.as_ref() {
+                                    "worried" => SpeechEmotion::Worried,
+                                    "shocked" => SpeechEmotion::Shocked,
+                                    "happy" => SpeechEmotion::Happy,
+                                    "neutral" => SpeechEmotion::Neutral,
+                                    _ => SpeechEmotion::Neutral,
+                                },
+                            );
 
-                        el.set_tag_name("div")?;
-                        el.before(
-                            &format!(
-                                r#"
+                            el.set_tag_name("div")?;
+                            el.before(
+                                &format!(
+                                    r#"
                         <table>
                         <tbody>
                             <td>
@@ -54,13 +56,20 @@ fn entries(conn: &W) -> Vec<Entry> {
                             </td>
                             <td>
                         "#
-                            ),
-                            ContentType::Html,
-                        );
-                        el.after("</td></tbody></table>", ContentType::Html);
+                                ),
+                                ContentType::Html,
+                            );
+                            el.after("</td></tbody></table>", ContentType::Html);
 
-                        Ok(())
-                    })],
+                            Ok(())
+                        }),
+                        comments!("pre > code", |c| {
+                            // for prism.js html-in-comments
+                            c.replace(&c.text(), ContentType::Text);
+
+                            Ok(())
+                        }),
+                    ],
                     ..RewriteStrSettings::new()
                 },
             )
