@@ -5,7 +5,9 @@ use crate::{
 };
 use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
-use lol_html::{RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str};
+use lol_html::{
+    RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str, text,
+};
 use poem::{IntoResponse, handler, web::Data};
 
 const HOST: &str = "https://j0.lol";
@@ -66,6 +68,15 @@ fn entries(conn: &W) -> Vec<Entry> {
                         comments!("pre > code", |c| {
                             // for prism.js html-in-comments
                             c.replace(&c.text().trim(), ContentType::Text);
+
+                            Ok(())
+                        }),
+                        text!("pre > code", |text| {
+                            // as above but hopefully targeting non-comment, to remove trim from start and end
+                            // will break if the text nodes are split by comments. dont do that i guess.
+                            if text.last_in_text_node() {
+                                text.set_str(text.as_str().trim_start().to_string());
+                            }
 
                             Ok(())
                         }),
