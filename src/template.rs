@@ -28,6 +28,9 @@ pub fn header_extra(markup: Markup) -> Markup {
 
             link rel="icon" href="/static/favicon.ico" sizes="any";
             link rel="apple-touch-icon" href="/static/j0site-pfp.png";
+
+            link rel="alternate" type="application/atom+xml" href="/feed" title="Atom feed for this page";
+
             meta property="og:image" content="/static/j0site-banner.png";
 
             (markup)

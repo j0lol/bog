@@ -71,15 +71,6 @@ fn entries(conn: &W) -> Vec<Entry> {
 
                             Ok(())
                         }),
-                        text!("pre > code", |text| {
-                            // as above but hopefully targeting non-comment, to remove trim from start and end
-                            // will break if the text nodes are split by comments. dont do that i guess.
-                            if text.last_in_text_node() {
-                                text.set_str(text.as_str().trim_start().to_string());
-                            }
-
-                            Ok(())
-                        }),
                     ],
                     ..RewriteStrSettings::new()
                 },
