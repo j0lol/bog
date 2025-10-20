@@ -65,7 +65,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                         }),
                         comments!("pre > code", |c| {
                             // for prism.js html-in-comments
-                            c.replace(&c.text(), ContentType::Text);
+                            c.replace(&c.text().trim(), ContentType::Text);
 
                             Ok(())
                         }),
