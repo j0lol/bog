@@ -110,23 +110,27 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
 }
 
 #[handler]
-pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
+pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> impl IntoResponse {
     let conn = conn.lock().unwrap();
 
     let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM post WHERE slug = ?1").unwrap();
-    let post = stmt
-        .query_one([slug], |row| {
-            Ok(Post {
-                title: row.get(0).unwrap(),
-                contents: row.get(1).unwrap(),
-                slug: row.get(2).unwrap(),
-                subtitle: row.get(3).unwrap(),
-                category: row.get(4).unwrap(),
-                bsky_uri: row.get(5).unwrap(),
-                creation_datetime: row.get(6).unwrap(),
-            })
+    let post = match stmt.query_one([slug], |row| {
+        Ok(Post {
+            title: row.get(0).unwrap(),
+            contents: row.get(1).unwrap(),
+            slug: row.get(2).unwrap(),
+            subtitle: row.get(3).unwrap(),
+            category: row.get(4).unwrap(),
+            bsky_uri: row.get(5).unwrap(),
+            creation_datetime: row.get(6).unwrap(),
         })
-        .unwrap();
+    }) {
+        Ok(v) => v,
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return (StatusCode::NOT_FOUND, "404 Not Found").into_response();
+        }
+        Err(e) => Err(e).unwrap(),
+    };
 
     let contents = rewrite_str(&post.contents, RewriteStrSettings {
 
@@ -201,6 +205,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Markup {
                 ( footer() )
             }
         }
+        .into_response()
     }
 }
 
@@ -379,14 +384,14 @@ fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
         Ok(dt) => dt,
         Err(e) => {
-            println!(
-                "Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing."
-            );
+            // println!(
+            //     "Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing."
+            // );
             match NaiveDateTime::parse_from_str(&datestring, ISO8601_DATE)
                 .map(|ndt| DateTime::<Utc>::from_naive_utc_and_offset(ndt, Utc))
             {
                 Ok(dt) => {
-                    println!("Success parsing ISO8601 date.");
+                    // println!("Success parsing ISO8601 date.");
 
                     dt.into()
                 }

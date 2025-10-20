@@ -1,6 +1,11 @@
-use crate::{D, W, post::fetch_all_posts};
+use crate::{
+    D, W,
+    post::fetch_all_posts,
+    template::{SpeechCharacter, SpeechDetails, SpeechEmotion, render_speech},
+};
 use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
+use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
 use poem::{IntoResponse, handler, web::Data};
 
 const HOST: &str = "https://j0.lol";
@@ -16,6 +21,49 @@ fn entries(conn: &W) -> Vec<Entry> {
                 name: "Jo Null".to_owned(),
                 ..Default::default()
             };
+            let contents = rewrite_str(
+                &post.contents,
+                RewriteStrSettings {
+                    element_content_handlers: vec![element!("speech-box", |el| {
+                        let char = el.get_attribute("character").unwrap_or("deer".to_string());
+                        let emotion = el.get_attribute("emotion").unwrap_or("neutral".to_string());
+
+                        let SpeechDetails { class: _, alt, src } = render_speech(
+                            match char.as_ref() {
+                                "you" => SpeechCharacter::You,
+                                "deer" => SpeechCharacter::Deer,
+                                _ => SpeechCharacter::Deer,
+                            },
+                            match emotion.as_ref() {
+                                "worried" => SpeechEmotion::Worried,
+                                "shocked" => SpeechEmotion::Shocked,
+                                "happy" => SpeechEmotion::Happy,
+                                "neutral" => SpeechEmotion::Neutral,
+                                _ => SpeechEmotion::Neutral,
+                            },
+                        );
+
+                        el.set_tag_name("table")?;
+                        el.before(
+                            &format!(
+                                r#"
+                        <tbody>
+                            <td>
+                                <img width="120" height="120" src="{src}" alt="{alt}">
+                            </td>
+                            <td>
+                        "#
+                            ),
+                            ContentType::Html,
+                        );
+                        el.after("</td></tbody>", ContentType::Html);
+
+                        Ok(())
+                    })],
+                    ..RewriteStrSettings::new()
+                },
+            )
+            .unwrap();
 
             entry
                 .link(Link {
@@ -28,7 +76,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                 .author(author)
                 .content(Content {
                     base: Some(HOST.to_owned()),
-                    src: Some(post.contents.clone()),
+                    value: Some(contents),
                     content_type: Some("html".to_owned()),
                     ..Content::default()
                 });
