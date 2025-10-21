@@ -1,11 +1,13 @@
 mod db;
 mod feed;
+mod og_image;
 mod other_pages;
 pub mod post;
 pub mod template;
 
 use crate::{
     feed::feed as feed_handler,
+    og_image::og_image_handler,
     other_pages::{contact, index, projects},
     post::{
         edit_post, list_posts, login, new_post, submit_edited_post, submit_new_post, update_draft,
@@ -39,6 +41,7 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/blog/new/sync", poem::post(update_draft))
         .at("/blog/edit/:slug", get(edit_post).post(submit_edited_post))
         .at("/blog/:slug", get(view_post))
+        .at("/blog/og_image/:slug", get(og_image_handler))
         .at("/login", poem::post(login))
         .at("/feed", get(feed_handler))
         .nest("/static", StaticFilesEndpoint::new("./static/"))

@@ -9,7 +9,7 @@ use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
 use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
 use maud::{Markup, PreEscaped, html};
 use poem::{
-    IntoResponse, handler,
+    IntoResponse, Response, handler,
     http::StatusCode,
     web::{
         Data, Form, Json, Path, Redirect,
@@ -110,7 +110,7 @@ pub fn list_posts(Data(conn): D<&W>) -> Markup {
 }
 
 #[handler]
-pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> impl IntoResponse {
+pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
     let conn = conn.lock().unwrap();
 
     let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM post WHERE slug = ?1").unwrap();
@@ -375,7 +375,7 @@ mod tests {
     }
 }
 
-fn format_date(date: chrono::DateTime<Local>) -> String {
+pub fn format_date(date: chrono::DateTime<Local>) -> String {
     //let sfx = eng_ordinal_suffix(date.day() as usize);
     date.format(&format!("%B %d, %Y")).to_string()
 }
