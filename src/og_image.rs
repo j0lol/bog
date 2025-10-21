@@ -1,15 +1,13 @@
-// Modified from: https://github.com/rust-lang/crates_io_og_image
-// Licensed under the MIT license
-
 use crate::post::{Post, format_date};
 use crate::{D, W};
 use poem::http::StatusCode;
 use poem::{Body, IntoResponse, Response, handler};
+use rusqlite;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::error::Error;
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use tempfile::NamedTempFile;
 use tokio::fs;
@@ -41,7 +39,6 @@ fn cache_key(data: &OgImageData<'_>) -> String {
 
 pub struct OgImageGenerator {
     typst_binary_path: PathBuf,
-    oxipng_binary_path: PathBuf,
 }
 
 impl OgImageGenerator {
@@ -146,21 +143,16 @@ impl OgImageGenerator {
         Ok(buf)
     }
 
-    async fn optimize_png(&self, png_file: &Path) {
-        let mut command = Command::new(&self.oxipng_binary_path);
-        command
-            .arg("--opt")
-            .arg("2")
-            .arg("--strip")
-            .arg("safe")
-            .arg(png_file);
+    async fn optimize_png(&self, png_file: &std::path::Path) {
+        if let Ok(png_data) = tokio::fs::read(png_file).await {
+            let mut options = oxipng::Options::from_preset(2);
+            options.optimize_alpha = true;
+            options.strip = oxipng::StripChunks::Safe;
 
-        command.env_clear();
-        if let Ok(path) = std::env::var("PATH") {
-            command.env("PATH", path);
+            if let Ok(optimized) = oxipng::optimize_from_memory(&png_data, &options) {
+                tokio::fs::write(png_file, optimized).await.unwrap();
+            }
         }
-
-        let _ = command.output().await;
     }
 }
 
@@ -168,7 +160,6 @@ impl Default for OgImageGenerator {
     fn default() -> Self {
         Self {
             typst_binary_path: PathBuf::from("typst"),
-            oxipng_binary_path: PathBuf::from("oxipng"),
         }
     }
 }

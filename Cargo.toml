@@ -17,6 +17,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "process"] }
 atom_syndication = "0.12"
 tempfile = "3.23.0"
 serde_json = "1.0.145"
+oxipng = "9"
 
 [build-dependencies]
 vergen-git2 = { version = "1", features = ["build", "cargo", "rustc", "si"] }
