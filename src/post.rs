@@ -160,6 +160,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
         ..RewriteStrSettings::new()
     }).unwrap();
 
+    let datestring = format_date(post.creation_datetime);
     {
         let markup = html! {
             // samp {( format!("{post:#?}") )}
@@ -169,7 +170,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
             hr.frontmatter;
             p.blog-publish {
                 ( clock_icon() )
-                time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
+                time datetime=(post.creation_datetime) { (datestring.clone()) }
             }
 
             (PreEscaped(contents))
@@ -183,6 +184,10 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
                 meta property="og:title" content={(post.title) " — Jo's Blog"};
 
                 meta property="og:image" content={"/og-image/" (post.slug)};
+                meta property="og:image:type" content="image/png";
+                meta property="og:image:width" content="1200";
+                meta property="og:image:height" content="630";
+                meta property="og:image:alt" content={"A banner describing a blog post. The title is "(post.title) " and the publish time is "  (datestring)". The banner has a purple strip on the bottom with the website URL."};
             }) )
             div.wrapper {
                 (navbar(endpoint))
