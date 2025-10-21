@@ -188,6 +188,8 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
                 meta property="og:image:width" content="1200";
                 meta property="og:image:height" content="630";
                 meta property="og:image:alt" content={"A banner describing a blog post. The title is "(post.title) " and the publish time is "  (datestring)". The banner has a purple strip on the bottom with the website URL."};
+
+                meta name="twitter:card" content="summary_large_image";
             }) )
             div.wrapper {
                 (navbar(endpoint))
