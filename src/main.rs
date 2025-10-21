@@ -41,7 +41,7 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/blog/new/sync", poem::post(update_draft))
         .at("/blog/edit/:slug", get(edit_post).post(submit_edited_post))
         .at("/blog/:slug", get(view_post))
-        .at("/blog/og_image/:slug", get(og_image_handler))
+        .at("/og-image/:slug", get(og_image_handler))
         .at("/login", poem::post(login))
         .at("/feed", get(feed_handler))
         .nest("/static", StaticFilesEndpoint::new("./static/"))

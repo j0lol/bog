@@ -7,18 +7,37 @@ use poem::http::StatusCode;
 use poem::web::headers::ContentType;
 use poem::{Body, IntoResponse, Response, handler};
 use serde::Serialize;
+use std::collections::HashMap;
 use std::error::Error;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use tempfile::NamedTempFile;
 use tokio::fs;
 use tokio::process::Command;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Hash, PartialEq, Eq)]
 pub struct OgImageData<'a> {
     title: &'a str,
     subtitle: Option<&'a str>,
     datestring: &'a str,
+}
+
+// Simple in-memory cache for rendered images
+static IMAGE_CACHE: std::sync::OnceLock<Mutex<HashMap<String, Vec<u8>>>> =
+    std::sync::OnceLock::new();
+
+fn get_cache() -> &'static Mutex<HashMap<String, Vec<u8>>> {
+    IMAGE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn cache_key(data: &OgImageData<'_>) -> String {
+    format!(
+        "{}|{}|{}",
+        data.title,
+        data.subtitle.unwrap_or(""),
+        data.datestring
+    )
 }
 
 pub struct OgImageGenerator {
@@ -42,6 +61,15 @@ impl OgImageGenerator {
     }
 
     pub async fn generate(&self, data: OgImageData<'_>) -> Result<Vec<u8>, Box<dyn Error>> {
+        // Check cache first
+        let key = cache_key(&data);
+        {
+            let cache = get_cache().lock().unwrap();
+            if let Some(cached_image) = cache.get(&key) {
+                return Ok(cached_image.clone());
+            }
+        }
+
         let temp_dir = tempfile::tempdir()?;
         let assets_dir = temp_dir.path().join("assets");
         fs::create_dir(&assets_dir).await?;
@@ -122,6 +150,12 @@ impl OgImageGenerator {
         {
             let mut file = std::fs::File::open(output_file.path())?;
             file.read_to_end(&mut buf)?;
+        }
+
+        // Cache the result
+        {
+            let mut cache = get_cache().lock().unwrap();
+            cache.insert(key, buf.clone());
         }
 
         Ok(buf)

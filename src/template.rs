@@ -3,6 +3,7 @@ use maud::{DOCTYPE, Markup, PreEscaped, html};
 pub fn header() -> Markup {
     header_extra(html! {
         meta property="og:title" content="j0.lol";
+        meta property="og:image" content="/static/j0site-banner.png";
     })
 }
 
@@ -30,8 +31,6 @@ pub fn header_extra(markup: Markup) -> Markup {
             link rel="apple-touch-icon" href="/static/j0site-pfp.png";
 
             link rel="alternate" type="application/atom+xml" href="/feed" title="Atom feed for this page";
-
-            meta property="og:image" content="/static/j0site-banner.png";
 
             (markup)
         }

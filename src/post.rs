@@ -182,12 +182,7 @@ pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
 
                 meta property="og:title" content={(post.title) " — Jo's Blog"};
 
-                meta property="og:description" content={
-                    (if let Some(subtitle) = post.subtitle {
-                        format!("{subtitle}  — ")
-                    } else { "".to_string() })
-                    "Posted on " (format_date(post.creation_datetime))
-                };
+                meta property="og:image" content={"/og-image/" (post.slug)};
             }) )
             div.wrapper {
                 (navbar(endpoint))
