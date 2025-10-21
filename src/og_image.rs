@@ -4,7 +4,6 @@
 use crate::post::{Post, format_date};
 use crate::{D, W};
 use poem::http::StatusCode;
-use poem::web::headers::ContentType;
 use poem::{Body, IntoResponse, Response, handler};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -46,20 +45,6 @@ pub struct OgImageGenerator {
 }
 
 impl OgImageGenerator {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn with_typst_path(mut self, typst_path: PathBuf) -> Self {
-        self.typst_binary_path = typst_path;
-        self
-    }
-
-    pub fn with_oxipng_path(mut self, oxipng_path: PathBuf) -> Self {
-        self.oxipng_binary_path = oxipng_path;
-        self
-    }
-
     pub async fn generate(&self, data: OgImageData<'_>) -> Result<Vec<u8>, Box<dyn Error>> {
         // Check cache first
         let key = cache_key(&data);
@@ -212,7 +197,7 @@ pub async fn og_image_handler(
             Err(rusqlite::Error::QueryReturnedNoRows) => {
                 return (StatusCode::NOT_FOUND, "404 Not Found").into_response();
             }
-            Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
+            Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
         }
     };
 
@@ -222,7 +207,7 @@ pub async fn og_image_handler(
         datestring: &format_date(post.creation_datetime),
     };
 
-    match OgImageGenerator::new().generate(og_image_data).await {
+    match OgImageGenerator::default().generate(og_image_data).await {
         Ok(image_bytes) => Response::builder()
             .content_type("image/png")
             .body(Body::from_vec(image_bytes))

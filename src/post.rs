@@ -5,7 +5,7 @@ use crate::{
         render_speech,
     },
 };
-use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
+use chrono::{DateTime, FixedOffset, Local, NaiveDateTime, Utc};
 use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
 use maud::{Markup, PreEscaped, html};
 use poem::{
@@ -339,36 +339,37 @@ pub fn submit_new_post(
     Redirect::see_other(format!("/blog/{}", form.slug)).into_response()
 }
 
-fn eng_ordinal_suffix(n: usize) -> String {
-    // https://stackoverflow.com/a/31615643
-    const S: [&str; 4] = ["th", "st", "nd", "rd"];
-    let v: usize = n % 100;
+// it doesn't work. shelve for later.
+// fn eng_ordinal_suffix(n: usize) -> String {
+//     // https://stackoverflow.com/a/31615643
+//     const S: [&str; 4] = ["th", "st", "nd", "rd"];
+//     let v: usize = n % 100;
 
-    let a = S.get((v.overflowing_sub(20).0) % 10);
-    let b = S.get(v);
-    let c = S.first();
+//     let a = S.get((v.overflowing_sub(20).0) % 10);
+//     let b = S.get(v);
+//     let c = S.first();
 
-    a.or(b).or(c).unwrap().to_string()
-}
+//     a.or(b).or(c).unwrap().to_string()
+// }
 
-#[cfg(test)]
-mod tests {
-    use crate::post::eng_ordinal_suffix;
+// #[cfg(test)]
+// mod tests {
+//     use crate::post::eng_ordinal_suffix;
 
-    #[test]
-    fn testsuffix() {
-        let nums = [0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 100, 101, 111];
-        let nums_ordinal = [
-            "0th", "1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "14th", "20th",
-            "21st", "22nd", "100th", "101st", "111th",
-        ];
+//     #[test]
+//     fn testsuffix() {
+//         let nums = [0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 100, 101, 111];
+//         let nums_ordinal = [
+//             "0th", "1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "14th", "20th",
+//             "21st", "22nd", "100th", "101st", "111th",
+//         ];
 
-        for (x, y) in nums.iter().zip(nums_ordinal) {
-            let x_ = format!("{x}{}", eng_ordinal_suffix(*x));
-            assert_eq!(x_, y)
-        }
-    }
-}
+//         for (x, y) in nums.iter().zip(nums_ordinal) {
+//             let x_ = format!("{x}{}", eng_ordinal_suffix(*x));
+//             assert_eq!(x_, y)
+//         }
+//     }
+// }
 
 pub fn format_date(date: chrono::DateTime<Local>) -> String {
     //let sfx = eng_ordinal_suffix(date.day() as usize);
@@ -378,7 +379,7 @@ pub fn format_date(date: chrono::DateTime<Local>) -> String {
 fn parse_date(datestring: String) -> chrono::DateTime<FixedOffset> {
     match chrono::DateTime::parse_from_rfc3339(&datestring) {
         Ok(dt) => dt,
-        Err(e) => {
+        Err(_) => {
             // println!(
             //     "Dt parse error: {e}. String: {datestring}. Attempting fallback no-tz ISO8601 parsing."
             // );
