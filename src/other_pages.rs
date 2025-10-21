@@ -30,7 +30,7 @@ pub fn index() -> Markup {
             ( navbar("/") )
             main {
                 h1.fancy.page-head { "Hi!" }
-                ( speech( SpeechCharacter::Deer, SpeechEmotion::Neutral, html! {
+                ( speech( &SpeechCharacter::Deer, &SpeechEmotion::Neutral, &html! {
                     p {
                         "I'm Jo. "
                         label #my-pronouns { "My pronouns are " (select_1) }
@@ -112,7 +112,7 @@ pub fn index() -> Markup {
             }
 
             div.page {
-                ( speech( SpeechCharacter::Deer, SpeechEmotion::Happy, html! {
+                ( speech( &SpeechCharacter::Deer, &SpeechEmotion::Happy, &html! {
                     p {
                         (PreEscaped("Thanks for visiting my website! Here's some friend's sites.
                         These are the 88&times;31 buttons that my friends made to link to their websites.
@@ -159,9 +159,9 @@ pub fn index() -> Markup {
 #[handler]
 pub fn contact() -> Markup {
     page(
-        html! {
+        &html! {
             ( PreEscaped(r#"
-                
+
      <h1 class="page-head" id="title">Contact me</h1>
 
         <p>The best place to contact me is my email: <a href="mailto:me@j0.lol">me@j0.lol</a></p>
@@ -310,7 +310,7 @@ pub fn projects() -> Markup {
         ],
     ];
     page(
-        html! {
+        &html! {
             h1.page-head { "Projects" }
             p { "These are my most notable projects, from latest to oldest." }
             .card-stack {

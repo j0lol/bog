@@ -1,11 +1,11 @@
-use crate::post::{Post, format_date};
+use crate::error::{AppError, Result};
+use crate::post::{fetch::fetch_post, format_date};
 use crate::{D, W};
-use poem::http::StatusCode;
+use poem::web::Data;
 use poem::{Body, IntoResponse, Response, handler};
-use rusqlite;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
+
 use std::io::Read;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -32,7 +32,7 @@ fn cache_key(data: &OgImageData<'_>) -> String {
     format!(
         "{}|{}|{}",
         data.title,
-        data.subtitle.unwrap_or(""),
+        data.subtitle.unwrap_or_default(),
         data.datestring
     )
 }
@@ -42,11 +42,11 @@ pub struct OgImageGenerator {
 }
 
 impl OgImageGenerator {
-    pub async fn generate(&self, data: OgImageData<'_>) -> Result<Vec<u8>, Box<dyn Error>> {
+    pub async fn generate(&self, data: OgImageData<'_>) -> Result<Vec<u8>> {
         // Check cache first
         let key = cache_key(&data);
         {
-            let cache = get_cache().lock().unwrap();
+            let cache = get_cache().lock()?;
             if let Some(cached_image) = cache.get(&key) {
                 return Ok(cached_image.clone());
             }
@@ -121,11 +121,15 @@ impl OgImageGenerator {
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Typst compilation failed: {}", stderr).into());
+            return Err(AppError::internal_server_error(format!(
+                "Typst compilation failed: {stderr}"
+            )));
         }
 
         // Optimize the PNG
-        self.optimize_png(output_file.path()).await;
+        if let Err(e) = self.optimize_png(output_file.path()).await {
+            log::warn!("PNG optimization failed, using unoptimized version: {e}");
+        }
 
         // Read the generated image
         let mut buf = vec![];
@@ -136,23 +140,25 @@ impl OgImageGenerator {
 
         // Cache the result
         {
-            let mut cache = get_cache().lock().unwrap();
+            let mut cache = get_cache().lock()?;
             cache.insert(key, buf.clone());
         }
 
         Ok(buf)
     }
 
-    async fn optimize_png(&self, png_file: &std::path::Path) {
-        if let Ok(png_data) = tokio::fs::read(png_file).await {
-            let mut options = oxipng::Options::from_preset(2);
-            options.optimize_alpha = true;
-            options.strip = oxipng::StripChunks::Safe;
+    async fn optimize_png(&self, png_file: &std::path::Path) -> Result<()> {
+        let png_data = tokio::fs::read(png_file).await?;
+        let mut options = oxipng::Options::from_preset(2);
+        options.optimize_alpha = true;
+        options.strip = oxipng::StripChunks::Safe;
 
-            if let Ok(optimized) = oxipng::optimize_from_memory(&png_data, &options) {
-                tokio::fs::write(png_file, optimized).await.unwrap();
-            }
-        }
+        let optimized = oxipng::optimize_from_memory(&png_data, &options).map_err(|e| {
+            AppError::internal_server_error(format!("PNG optimization failed: {e}"))
+        })?;
+
+        tokio::fs::write(png_file, optimized).await?;
+        Ok(())
     }
 }
 
@@ -169,28 +175,14 @@ pub async fn og_image_handler(
     poem::web::Path(slug): poem::web::Path<String>,
     poem::web::Data(conn): D<&W>,
 ) -> Response {
-    let post = {
-        let conn = conn.lock().unwrap();
-        let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM post WHERE slug = ?1").unwrap();
+    match og_image_handler_inner(slug, Data(conn)).await {
+        Ok(response) => response,
+        Err(e) => e.into_response(),
+    }
+}
 
-        match stmt.query_one([slug], |row| {
-            Ok(Post {
-                title: row.get(0).unwrap(),
-                contents: row.get(1).unwrap(),
-                slug: row.get(2).unwrap(),
-                subtitle: row.get(3).unwrap(),
-                category: row.get(4).unwrap(),
-                bsky_uri: row.get(5).unwrap(),
-                creation_datetime: row.get(6).unwrap(),
-            })
-        }) {
-            Ok(v) => v,
-            Err(rusqlite::Error::QueryReturnedNoRows) => {
-                return (StatusCode::NOT_FOUND, "404 Not Found").into_response();
-            }
-            Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
-        }
-    };
+async fn og_image_handler_inner(slug: String, conn: D<&W>) -> Result<Response> {
+    let post = fetch_post(slug, &conn)?;
 
     let og_image_data = OgImageData {
         title: &post.title,
@@ -198,15 +190,10 @@ pub async fn og_image_handler(
         datestring: &format_date(post.creation_datetime),
     };
 
-    match OgImageGenerator::default().generate(og_image_data).await {
-        Ok(image_bytes) => Response::builder()
-            .content_type("image/png")
-            .body(Body::from_vec(image_bytes))
-            .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to generate image",
-        )
-            .into_response(),
-    }
+    let image_bytes = OgImageGenerator::default().generate(og_image_data).await?;
+
+    Ok(Response::builder()
+        .content_type("image/png")
+        .body(Body::from_vec(image_bytes))
+        .into_response())
 }

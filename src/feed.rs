@@ -5,15 +5,13 @@ use crate::{
 };
 use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
-use lol_html::{
-    RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str, text,
-};
+use lol_html::{RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str};
 use poem::{IntoResponse, handler, web::Data};
 
 const HOST: &str = "https://j0.lol";
 
 fn entries(conn: &W) -> Vec<Entry> {
-    let posts = fetch_all_posts(conn);
+    let posts = fetch_all_posts(conn).unwrap_or_default();
 
     let entries: Vec<_> = posts
         .iter()
@@ -23,6 +21,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                 name: "Jo Null".to_owned(),
                 ..Default::default()
             };
+            #[allow(clippy::expect_used)]
             let contents = rewrite_str(
                 &post.contents,
                 RewriteStrSettings {
@@ -33,16 +32,14 @@ fn entries(conn: &W) -> Vec<Entry> {
                                 el.get_attribute("emotion").unwrap_or("neutral".to_string());
 
                             let SpeechDetails { class: _, alt, src } = render_speech(
-                                match char.as_ref() {
+                                &match char.as_ref() {
                                     "you" => SpeechCharacter::You,
-                                    "deer" => SpeechCharacter::Deer,
                                     _ => SpeechCharacter::Deer,
                                 },
-                                match emotion.as_ref() {
+                                &match emotion.as_ref() {
                                     "worried" => SpeechEmotion::Worried,
                                     "shocked" => SpeechEmotion::Shocked,
                                     "happy" => SpeechEmotion::Happy,
-                                    "neutral" => SpeechEmotion::Neutral,
                                     _ => SpeechEmotion::Neutral,
                                 },
                             );
@@ -51,13 +48,13 @@ fn entries(conn: &W) -> Vec<Entry> {
                             el.before(
                                 &format!(
                                     r#"
-                        <table>
-                        <tbody>
-                            <td>
-                                <img width="120" height="120" src="{src}" alt="{alt}">
-                            </td>
-                            <td>
-                        "#
+                                <table>
+                                <tbody>
+                                    <td>
+                                        <img width="120" height="120" src="{src}" alt="{alt}">
+                                    </td>
+                                    <td>
+                                "#
                                 ),
                                 ContentType::Html,
                             );
@@ -67,7 +64,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                         }),
                         comments!("pre > code", |c| {
                             // for prism.js html-in-comments
-                            c.replace(&c.text().trim(), ContentType::Text);
+                            c.replace(c.text().trim(), ContentType::Text);
 
                             Ok(())
                         }),
@@ -75,7 +72,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                     ..RewriteStrSettings::new()
                 },
             )
-            .unwrap();
+            .expect("HTML rewriting should not fail for RSS feed generation");
 
             entry
                 .link(Link {

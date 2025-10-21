@@ -1,13 +1,15 @@
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 
+#[must_use]
 pub fn header() -> Markup {
-    header_extra(html! {
+    header_extra(&html! {
         meta property="og:title" content="j0.lol";
         meta property="og:image" content="/static/j0site-banner.png";
     })
 }
 
-pub fn header_extra(markup: Markup) -> Markup {
+#[must_use]
+pub fn header_extra(markup: &Markup) -> Markup {
     html! {
         (DOCTYPE)
         head {
@@ -37,6 +39,7 @@ pub fn header_extra(markup: Markup) -> Markup {
     }
 }
 
+#[must_use]
 pub fn footer() -> Markup {
     html! {
         footer #page-footer {
@@ -84,6 +87,7 @@ pub fn footer() -> Markup {
     }
 }
 
+#[must_use]
 pub fn navbar(current_endpoint: &str) -> Markup {
     let items = vec![
         ("index", "/", "j0.lol"),
@@ -111,7 +115,8 @@ pub fn navbar(current_endpoint: &str) -> Markup {
     }
 }
 
-pub fn page(markup: Markup, endpoint: &str) -> Markup {
+#[must_use]
+pub fn page(markup: &Markup, endpoint: &str) -> Markup {
     html! {
         ( header() )
         div.wrapper {
@@ -124,7 +129,8 @@ pub fn page(markup: Markup, endpoint: &str) -> Markup {
     }
 }
 
-pub fn page_article(markup: Markup, endpoint: &str) -> Markup {
+#[must_use]
+pub fn page_article(markup: &Markup, endpoint: &str) -> Markup {
     html! {
         ( header() )
         div.wrapper {
@@ -154,7 +160,8 @@ pub struct SpeechDetails {
     pub alt: String,
     pub src: String,
 }
-pub fn render_speech(char: SpeechCharacter, emotion: SpeechEmotion) -> SpeechDetails {
+#[must_use]
+pub fn render_speech(char: &SpeechCharacter, emotion: &SpeechEmotion) -> SpeechDetails {
     let src = match char {
         SpeechCharacter::Deer => match emotion {
             SpeechEmotion::Neutral => "/static/speech/deer/neutral.png",
@@ -185,7 +192,8 @@ pub fn render_speech(char: SpeechCharacter, emotion: SpeechEmotion) -> SpeechDet
     }
 }
 
-pub fn speech(char: SpeechCharacter, emotion: SpeechEmotion, content: Markup) -> Markup {
+#[must_use]
+pub fn speech(char: &SpeechCharacter, emotion: &SpeechEmotion, content: &Markup) -> Markup {
     let SpeechDetails { class, alt, src } = render_speech(char, emotion);
     html! {
         div.dialog-box {

@@ -41,14 +41,17 @@ const MIGRATIONS_SLICE: &[M<'_>] = &[
 
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATIONS_SLICE);
 
+#[allow(clippy::expect_used)]
 pub fn connect() -> Connection {
-    let mut conn = Connection::open("./db.db3").unwrap();
+    let mut conn = Connection::open("./db.db3").expect("Failed to open database file");
 
     // Apply some PRAGMA, often better to do it outside of migrations
     conn.pragma_update_and_check(None, "journal_mode", "WAL", |_| Ok(()))
-        .unwrap();
+        .expect("Failed to set WAL journal mode");
 
-    MIGRATIONS.to_latest(&mut conn).unwrap();
+    MIGRATIONS
+        .to_latest(&mut conn)
+        .expect("Failed to run database migrations");
 
     conn
 }

@@ -1,4 +1,14 @@
+// warn on clippy pedantic
+#![deny(clippy::unwrap_used, clippy::expect_used)]
+#![warn(clippy::pedantic)]
+#![allow(
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
+    clippy::too_many_lines
+)]
+
 mod db;
+mod error;
 mod feed;
 mod og_image;
 mod other_pages;
@@ -30,6 +40,8 @@ type D<T> = Data<T>;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
+    env_logger::init();
+
     let conn = Arc::new(Mutex::new(db::connect()));
 
     let app = Route::new()
