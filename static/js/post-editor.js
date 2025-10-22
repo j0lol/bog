@@ -128,40 +128,6 @@ const VOID_ELEMENTS = new Set([
   "wbr",
 ]);
 
-const handleAutoClose = (el) => {
-  el.addEventListener("input", () => {
-    const { value, selectionStart, selectionEnd } = el;
-    if (value[selectionStart - 1] !== ">") return;
-
-    const beforeCaret = value.slice(0, selectionStart);
-    const match = beforeCaret.match(/<([a-zA-Z0-9-]+)(\s[^<>]*)?>$/);
-    if (!match) return;
-
-    const tagName = match[1].toLowerCase();
-    if (VOID_ELEMENTS.has(tagName)) return;
-
-    const afterCaret = value.slice(selectionEnd);
-    const closingTag = `</${tagName}>`;
-
-    // Check if the closing tag already exists right after the caret
-    if (
-      value.slice(selectionStart, selectionStart + closingTag.length) ===
-      closingTag
-    ) {
-      return; // don’t insert a duplicate
-    }
-
-    if (selectionStart === selectionEnd) {
-      // single-line auto-close
-      el.value = beforeCaret + closingTag + afterCaret;
-      el.selectionStart = el.selectionEnd = selectionStart;
-    }
-
-    preview?.();
-    Prism?.highlightAll?.();
-  });
-};
-
 const enableEditorFeatures = (el) => {
   if (!el) return;
   el.value = el.value.replace(/\t/g, "    ");
