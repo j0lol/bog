@@ -82,11 +82,11 @@ fn view_post_inner(slug: String, Data(conn): D<&W>) -> Result<Response> {
                 h1.blog-head { (PreEscaped(post.title.clone() ))}
                 @let subtitle = post.subtitle.clone().unwrap_or_default();
                 span.blog-subhead { em { (subtitle) }}
-                hr.frontmatter;
                 p.blog-publish {
                     ( clock_icon() )
                     time datetime=(post.creation_datetime) { (datestring.clone()) }
                 }
+                hr.frontmatter;
 
                 (PreEscaped(contents))
             }

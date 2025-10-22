@@ -12,10 +12,11 @@ function preview() {
   editorPreview.innerHTML = `
     <h1 class="blog-head">${inputTitle.value}</h1>
     <span class="blog-subhead"><em>${inputSubtitle.value}</em></span>
-    <hr class='frontmatter'>
     <p class='blog-publish'>
       🕒 ${inputDt.value}
     </p>
+    <hr class='frontmatter'>
+
   `;
   editorPreview.innerHTML += editor.value;
 }

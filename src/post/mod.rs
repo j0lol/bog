@@ -29,7 +29,7 @@ pub struct Post {
 #[must_use]
 pub fn clock_icon() -> Markup {
     html! {
-        span.emoji-icon {( "🕒" )}
+        span.emoji-icon aria-label="Published on" {( "🕒" )}
     }
 }
 
