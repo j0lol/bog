@@ -136,8 +136,14 @@
 /*  https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Box_model#the_alternative_css_box_model */
 html {
     box-sizing: border-box;
+    scroll-padding-top: 4em;
 }
 
+:target {
+    background-color: rgba(from var(--accent) r g b / 0.2);
+    border: 1px solid rgba(from var(--accent) r g b / 0.5);
+    padding: 0.1em;
+}
 *,
 *::before,
 *::after {
@@ -331,9 +337,6 @@ img:not(.raw) {
 
     margin: 0 auto;
     display: block;
-}
-
-img:not(.raw) {
 }
 
 img:not(.raw).applerounded {
@@ -706,8 +709,8 @@ pre[lang="ansi"] {
 }
 
 span.emoji-icon {
-    padding-right: 0.20em;
-    padding-left: 0.20rem;
+    padding-right: 0.2em;
+    padding-left: 0.2rem;
     font-style: normal;
 }
 
