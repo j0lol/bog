@@ -123,44 +123,51 @@ fn render_post_form(post: &Post, title: &str, method: &str, action: &str, js_mod
             script defer src="/static/js/footnotes.js" {}
         }) )
         body {
-            h1 { (title) }
+            //h1 { (title) }
             form method=(method) action=(action) {
-                label {
-                    "Title: "
-                    input name="title" value=(post.title.clone()) {}
-                }
-                label {
-                    "Slug: "
-                    input name="slug" value=(post.slug.clone()) {}
-                }
-                label {
-                    "dtl: "
-                    input name="creation_datetime" type="datetime-local" value=(post.creation_datetime.format(ISO8601_DATE)) {}
-                }
-                label {
-                    "Subtitle: "
-                    input name="subtitle" value=[post.subtitle.clone()] {}
-                }
-                label {
-                    "Category: "
-                    input name="category" value=[post.category.clone()] {}
-                }
-                label {
-                    "bsky_uri:  "
-                    input name="bsky_uri" value=[post.bsky_uri.clone()] {}
-                    a href="https://pdsls.dev" {"pdsls"}
-                }
-                br;
-                br;
-                div #editorWrapper {
-                    textarea #editor name="contents" { (post.contents.clone()) }
-                    div #editorPreview { "hii :3" }
-                }
-                br;
-                span { "Your draft is auto saved..." }
+                #editorWrapper {
+                    .editorInnerWrapper {
+                        .editorInputs {
+                            details {
+                                summary { "Options" }
+                                .contents {
+                                    label {
+                                        "Title: "
+                                        input name="title" value=(post.title.clone()) {}
+                                    }
+                                    label {
+                                        "Slug: "
+                                        input name="slug" value=(post.slug.clone()) {}
+                                    }
+                                    label {
+                                        "dtl: "
+                                        input name="creation_datetime" type="datetime-local" value=(post.creation_datetime.format(ISO8601_DATE)) {}
+                                    }
+                                    label {
+                                        "Subtitle: "
+                                        input name="subtitle" value=[post.subtitle.clone()] {}
+                                    }
+                                    label {
+                                        "Category: "
+                                        input name="category" value=[post.category.clone()] {}
+                                    }
+                                    label {
+                                        span {"bsky_uri: " a href="https://pdsls.dev" {"pdsls"}}
+                                        input name="bsky_uri" value=[post.bsky_uri.clone()] {}
+                                    }
+                                    label {
+                                        span { "Publish!" }
+                                        button type="submit" disabled style="display: none" aria-hidden="true";
+                                        button type="submit" { "Publish" }
+                                    }
+                                }
 
-                button type="submit" disabled style="display: none" aria-hidden="true";
-                button type="submit" { "Publish" }
+                            }
+                        }
+                        textarea #editor name="contents" { (post.contents.clone()) }
+                    }
+                    #editorPreview { "hii :3" }
+                }
             }
 
             script type="module" {

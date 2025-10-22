@@ -731,28 +731,61 @@ span.emoji-icon {
 }
 
 #editorWrapper {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    height: 100%;
-    width: 100%;
+    padding: 0.2rem;
+    width: 100vw;
+    height: 100vh;
+
+    /* flip when breakpoint phone */
+    @media (width <= 768px) {
+        grid-template-columns: 1fr;
+        grid-auto-rows: minmax(40vh, auto);
+    }
 }
 
 #editorPreview {
-    max-width: 50vw;
-    max-height: 90vh;
     overflow: scroll;
-    border: 1px solid red;
     padding: 0 0.5rem;
     background-color: var(--bg-surface1);
-    width: 100%;
+}
+
+#editor,
+#editorPreview {
+    border: 1px solid rebeccapurple;
+    border-radius: 0.3rem;
+}
+
+.editorInnerWrapper {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.25rem;
 }
 
 #editor {
-    width: 100%;
-    height: 90vh;
+    flex: 1;
     white-space: pre;
     overflow-x: auto;
     overflow-y: auto;
     word-wrap: normal;
+    font-family: "Maple Mono", monospace;
+    font-size: small;
+}
+
+.editorInputs {
+    flex: 0;
+
+    .contents {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+
+        label {
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: center;
+        }
+    }
 }
