@@ -9,7 +9,7 @@ use crate::{
     template::header_extra,
 };
 use chrono::DateTime;
-use maud::{Markup, html};
+use maud::{Markup, PreEscaped, html};
 use poem::{
     IntoResponse, Response, handler,
     web::{Data, Form, Json, Redirect, cookie::CookieJar},
@@ -87,7 +87,7 @@ fn new_post_inner(cookie_jar: &CookieJar, Data(conn): D<&W>) -> Result<Response>
     let post = fetch_draft(conn)
         .map_err(|_| AppError::internal_server_error("Could not fetch draft".to_string()))?;
 
-    let response = render_post_form(&post, "Make a new post", "POST", "/blog/new");
+    let response = render_post_form(&post, "Make a new post", "POST", "/blog/new", "new");
     Ok(response.into_response())
 }
 
@@ -107,11 +107,17 @@ fn edit_post_inner(cookie_jar: &CookieJar, slug: &str, Data(conn): D<&W>) -> Res
     check_auth(cookie_jar)?;
 
     let post = fetch_post(slug.to_string(), conn)?;
-    let response = render_post_form(&post, "Edit post", "POST", &format!("/blog/edit/{slug}"));
+    let response = render_post_form(
+        &post,
+        "Edit post",
+        "POST",
+        &format!("/blog/edit/{slug}"),
+        "edit",
+    );
     Ok(response.into_response())
 }
 
-fn render_post_form(post: &Post, title: &str, method: &str, action: &str) -> Markup {
+fn render_post_form(post: &Post, title: &str, method: &str, action: &str, js_mode: &str) -> Markup {
     html! {
         ( header_extra(&html! {
             script defer src="/static/js/footnotes.js" {}
@@ -157,8 +163,12 @@ fn render_post_form(post: &Post, title: &str, method: &str, action: &str) -> Mar
                 button type="submit" { "Publish" }
             }
 
-            script type="module" src="/static/js/post-new.js" {}
-            script type="module" src="/static/js/post-preview.js" {}
+            script type="module" {
+                (PreEscaped(format!(r#"
+                    import {{ initPostEditor }} from "/static/js/post-editor.js";
+                    initPostEditor("{js_mode}");
+                "#)))
+            }
         }
     }
 }
