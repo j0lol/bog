@@ -169,7 +169,6 @@ const enableEditorFeatures = (el) => {
   handleTabs(el);
   handleEnterIndent(el);
   handleBackspace(el);
-  handleAutoClose(el);
 };
 
 // SpeechBox web component
