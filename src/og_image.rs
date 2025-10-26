@@ -1,7 +1,6 @@
 use crate::error::{AppError, Result};
 use crate::post::{fetch::fetch_post, format_date};
 use crate::{D, W};
-use poem::web::Data;
 use poem::{Body, IntoResponse, Response, handler};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -174,15 +173,8 @@ impl Default for OgImageGenerator {
 pub async fn og_image_handler(
     poem::web::Path(slug): poem::web::Path<String>,
     poem::web::Data(conn): D<&W>,
-) -> Response {
-    match og_image_handler_inner(slug, Data(conn)).await {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-async fn og_image_handler_inner(slug: String, conn: D<&W>) -> Result<Response> {
-    let post = fetch_post(slug, &conn)?;
+) -> Result<Response> {
+    let post = fetch_post(slug, conn)?;
 
     let og_image_data = OgImageData {
         title: &post.title,

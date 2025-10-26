@@ -1,4 +1,4 @@
-use poem::{IntoResponse, Response, http::StatusCode};
+use poem::{Response, error::ResponseError, http::StatusCode};
 use std::fmt;
 
 #[allow(unused_imports)]
@@ -42,18 +42,23 @@ impl fmt::Debug for AppError {
 
 impl std::error::Error for AppError {}
 
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
+impl ResponseError for AppError {
+    fn status(&self) -> StatusCode {
         match self {
-            AppError::NotFound => (StatusCode::NOT_FOUND, "404 Not Found").into_response(),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
-            AppError::DatabaseError(_) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response()
-            }
-            AppError::InternalServerError(_) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response()
-            }
+            AppError::NotFound => StatusCode::NOT_FOUND,
+            AppError::Unauthorized => StatusCode::UNAUTHORIZED,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
+    }
+
+    fn as_response(&self) -> Response {
+        let body = match self {
+            AppError::NotFound => "404 Not Found",
+            AppError::Unauthorized => "Unauthorized",
+            _ => "Internal server error",
+        };
+
+        Response::builder().status(self.status()).body(body)
     }
 }
 
@@ -90,4 +95,4 @@ impl<T> From<std::sync::PoisonError<T>> for AppError {
     }
 }
 
-pub type Result<T> = std::result::Result<T, AppError>;
+pub type Result<T> = poem::Result<T, AppError>;

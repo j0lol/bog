@@ -74,20 +74,13 @@ pub fn login(body: String, cookie_jar: &CookieJar) -> impl IntoResponse {
 }
 
 #[handler]
-pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> impl IntoResponse {
-    match new_post_inner(cookie_jar, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn new_post_inner(cookie_jar: &CookieJar, Data(conn): D<&W>) -> Result<Response> {
+pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> Result<Response> {
     check_auth(cookie_jar)?;
 
     let post = fetch_draft(conn)
         .map_err(|_| AppError::internal_server_error("Could not fetch draft".to_string()))?;
 
-    let response = render_post_form(&post, "Make a new post", "POST", "/blog/new", "new");
+    let response = render_post_form(&post, "POST", "/blog/new", "new");
     Ok(response.into_response())
 }
 
@@ -96,34 +89,20 @@ pub fn edit_post(
     cookie_jar: &CookieJar,
     poem::web::Path(slug): poem::web::Path<String>,
     Data(conn): D<&W>,
-) -> impl IntoResponse {
-    match edit_post_inner(cookie_jar, &slug, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn edit_post_inner(cookie_jar: &CookieJar, slug: &str, Data(conn): D<&W>) -> Result<Response> {
+) -> Result<Response> {
     check_auth(cookie_jar)?;
 
     let post = fetch_post(slug.to_string(), conn)?;
-    let response = render_post_form(
-        &post,
-        "Edit post",
-        "POST",
-        &format!("/blog/edit/{slug}"),
-        "edit",
-    );
+    let response = render_post_form(&post, "POST", &format!("/blog/edit/{slug}"), "edit");
     Ok(response.into_response())
 }
 
-fn render_post_form(post: &Post, title: &str, method: &str, action: &str, js_mode: &str) -> Markup {
+fn render_post_form(post: &Post, method: &str, action: &str, js_mode: &str) -> Markup {
     html! {
         ( header_extra(&html! {
             script defer src="/static/js/footnotes.js" {}
         }) )
         body {
-            //h1 { (title) }
             form method=(method) action=(action) {
                 #editorWrapper {
                     .editorInnerWrapper {
@@ -185,17 +164,6 @@ pub fn submit_new_post(
     cookie_jar: &CookieJar,
     Form(form): Form<SubmitNewPostForm>,
     Data(conn): D<&W>,
-) -> impl IntoResponse {
-    match submit_new_post_inner(cookie_jar, form, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn submit_new_post_inner(
-    cookie_jar: &CookieJar,
-    form: SubmitNewPostForm,
-    Data(conn): D<&W>,
 ) -> Result<Response> {
     check_auth(cookie_jar)?;
 
@@ -221,17 +189,6 @@ pub fn submit_edited_post(
     cookie_jar: &CookieJar,
     Form(form): Form<SubmitEditedPostForm>,
     Data(conn): D<&W>,
-) -> impl IntoResponse {
-    match submit_edited_post_inner(cookie_jar, form, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn submit_edited_post_inner(
-    cookie_jar: &CookieJar,
-    form: SubmitEditedPostForm,
-    Data(conn): D<&W>,
 ) -> Result<Response> {
     check_auth(cookie_jar)?;
 
@@ -256,17 +213,6 @@ fn submit_edited_post_inner(
 pub fn update_draft(
     cookie_jar: &CookieJar,
     Json(form): Json<SubmitNewPostForm>,
-    Data(conn): D<&W>,
-) -> impl IntoResponse {
-    match update_draft_inner(cookie_jar, form, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn update_draft_inner(
-    cookie_jar: &CookieJar,
-    form: SubmitNewPostForm,
     Data(conn): D<&W>,
 ) -> Result<Response> {
     check_auth(cookie_jar)?;

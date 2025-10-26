@@ -39,6 +39,14 @@ pub fn fetch_all_posts(conn: &W) -> Result<Vec<Post>> {
     Ok(posts)
 }
 
+pub fn fetch_post(slug: String, conn: &W) -> Result<Post> {
+    fetch_post_inner(&PostSource::Post(slug), conn)
+}
+
+pub fn fetch_draft(conn: &W) -> Result<Post> {
+    fetch_post_inner(&PostSource::Draft, conn)
+}
+
 fn fetch_post_inner(source: &PostSource, conn: &W) -> Result<Post> {
     let conn = conn.lock()?;
 
@@ -70,12 +78,4 @@ fn fetch_post_inner(source: &PostSource, conn: &W) -> Result<Post> {
         .map_err(AppError::from)?;
 
     Ok(post)
-}
-
-pub fn fetch_post(slug: String, conn: &W) -> Result<Post> {
-    fetch_post_inner(&PostSource::Post(slug), conn)
-}
-
-pub fn fetch_draft(conn: &W) -> Result<Post> {
-    fetch_post_inner(&PostSource::Draft, conn)
 }

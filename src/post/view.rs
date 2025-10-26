@@ -16,14 +16,7 @@ use poem::{
 use super::format_date;
 
 #[handler]
-pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Response {
-    match view_post_inner(slug, Data(conn)) {
-        Ok(response) => response,
-        Err(e) => e.into_response(),
-    }
-}
-
-fn view_post_inner(slug: String, Data(conn): D<&W>) -> Result<Response> {
+pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {
     let post = fetch_post(slug, conn)?;
 
     let contents = rewrite_str(

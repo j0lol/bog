@@ -6,17 +6,10 @@ use crate::{
     template::{footer, header_extra, navbar},
 };
 use maud::{PreEscaped, html};
-use poem::{IntoResponse, handler, web::Data};
+use poem::{IntoResponse, Response, handler, web::Data};
 
 #[handler]
-pub fn list_posts(Data(conn): D<&W>) -> impl IntoResponse {
-    match list_posts_inner(Data(conn)) {
-        Ok(response) => response.into_response(),
-        Err(e) => e.into_response(),
-    }
-}
-
-fn list_posts_inner(Data(conn): D<&W>) -> Result<maud::Markup> {
+pub fn list_posts(Data(conn): D<&W>) -> Result<Response> {
     let posts = fetch_all_posts(conn)?;
 
     let markup = html! {
@@ -62,5 +55,5 @@ fn list_posts_inner(Data(conn): D<&W>) -> Result<maud::Markup> {
         }
     };
 
-    Ok(markup)
+    Ok(markup.into_response())
 }
