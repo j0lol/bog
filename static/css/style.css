@@ -674,6 +674,15 @@ div.code-toolbar {
     }
 }
 
+/* this css looks weird? lol? i mean it works. */
+:not(pre) > code {
+    background-color: var(--plain-bg);
+    padding: 0 0.1rem;
+    border: 1px solid var(--bg-surface0);
+    border-radius: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 10pt;
+}
 pre {
     background-color: var(--plain-bg);
     padding: 1rem;
