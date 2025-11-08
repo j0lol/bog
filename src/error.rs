@@ -83,6 +83,12 @@ impl From<serde_json::Error> for AppError {
     }
 }
 
+impl From<typst_as_lib::TypstAsLibError> for AppError {
+    fn from(err: typst_as_lib::TypstAsLibError) -> Self {
+        AppError::internal_server_error(format!("Typst error: {err}"))
+    }
+}
+
 impl From<String> for AppError {
     fn from(err: String) -> Self {
         AppError::internal_server_error(err)

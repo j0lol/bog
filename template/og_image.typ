@@ -18,7 +18,7 @@
 
 #set page(width: 1200pt/2, height: 630pt/2, fill: color.bg, margin: 0pt);
 
-#let data = json.decode(sys.inputs.data);
+#let data = sys.inputs;
 #let title = data.title;
 #let subtitle = data.at("subtitle", default: "");
 #let datestring = data.datestring;
