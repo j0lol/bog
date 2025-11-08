@@ -1,12 +1,12 @@
-use super::format_date;
-use super::{clock_icon, fetch::fetch_all_posts};
+use maud::{PreEscaped, html};
+use poem::{IntoResponse, Response, handler, web::Data};
+
+use super::{clock_icon, fetch::fetch_all_posts, format_date};
 use crate::{
     D, W,
     error::Result,
     template::{footer, header_extra, navbar},
 };
-use maud::{PreEscaped, html};
-use poem::{IntoResponse, Response, handler, web::Data};
 
 #[handler]
 pub fn list_posts(Data(conn): D<&W>) -> Result<Response> {

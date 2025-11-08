@@ -3,15 +3,14 @@ pub mod fetch;
 pub mod list;
 pub mod view;
 
-use chrono::{DateTime, Local};
-use chrono::{Datelike, FixedOffset, NaiveDateTime, Utc};
-use maud::{Markup, html};
-use serde::Deserialize;
 use std::fs::read_to_string;
 
 pub use admin::{edit_post, login, new_post, submit_edited_post, submit_new_post, update_draft};
+use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
 pub use fetch::fetch_all_posts;
 pub use list::list_posts;
+use maud::{Markup, html};
+use serde::Deserialize;
 pub use view::view_post;
 const ISO8601_DATE: &str = "%Y-%m-%dT%H:%M";
 

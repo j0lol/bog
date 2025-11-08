@@ -1,11 +1,3 @@
-use super::{clock_icon, fetch::fetch_post};
-use crate::{
-    D, W,
-    error::{AppError, Result},
-    template::{
-        SpeechCharacter, SpeechDetails, SpeechEmotion, footer, header_extra, navbar, render_speech,
-    },
-};
 use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
 use maud::{PreEscaped, html};
 use poem::{
@@ -13,7 +5,14 @@ use poem::{
     web::{Data, Path},
 };
 
-use super::format_date;
+use super::{clock_icon, fetch::fetch_post, format_date};
+use crate::{
+    D, W,
+    error::{AppError, Result},
+    template::{
+        SpeechCharacter, SpeechDetails, SpeechEmotion, footer, header_extra, navbar, render_speech,
+    },
+};
 
 #[handler]
 pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {

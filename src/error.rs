@@ -1,8 +1,8 @@
-use poem::{Response, error::ResponseError, http::StatusCode};
 use std::fmt;
 
 #[allow(unused_imports)]
 use log::{debug, error, info, warn};
+use poem::{Response, error::ResponseError, http::StatusCode};
 
 pub enum AppError {
     NotFound,

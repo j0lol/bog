@@ -1,4 +1,5 @@
 use std::error::Error;
+
 use vergen_git2::{BuildBuilder, CargoBuilder, Emitter, Git2Builder, RustcBuilder, SysinfoBuilder};
 
 // NOTE: This will output everything, and requires all features enabled.
