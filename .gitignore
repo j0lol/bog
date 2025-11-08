@@ -4,3 +4,4 @@
 *.db3-wal
 **/.DS_Store
 .secret
+node_modules/
