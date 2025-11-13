@@ -1,3 +1,8 @@
+use crate::{
+    D, W,
+    error::{AppError, Result},
+    post::{fetch::fetch_post, format_date},
+};
 use derive_typst_intoval::{IntoDict, IntoValue};
 use poem::{Body, IntoResponse, Response, handler};
 use serde::Serialize;
@@ -11,12 +16,6 @@ use typst::{
 };
 use typst_as_lib::TypstEngine;
 
-use crate::{
-    D, W,
-    error::{AppError, Result},
-    post::{fetch::fetch_post, format_date},
-};
-
 const TEMPLATE_FILE: &str = include_str!("../template/og_image.typ");
 const FONTS: [&[u8]; 5] = [
     include_bytes!("../template/assets/DMSans-Regular.ttf"),
@@ -25,32 +24,6 @@ const FONTS: [&[u8]; 5] = [
     include_bytes!("../template/assets/HeptaSlab-Regular.ttf"),
     include_bytes!("../template/assets/MapleMono-Medium.ttf"),
 ];
-
-type Cache = HashMap<String, Vec<u8>>;
-
-// Simple in-memory cache for rendered images
-static IMAGE_CACHE: std::sync::OnceLock<Mutex<Cache>> = std::sync::OnceLock::new();
-
-fn acquire_cache() -> &'static Mutex<Cache> {
-    IMAGE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-fn get_cache_item(cache: &MutexGuard<'_, Cache>, key: &OgImageData) -> Option<Vec<u8>> {
-    cache.get(&cache_key(key)).cloned()
-}
-
-fn insert_cache_item(cache: &mut MutexGuard<'_, Cache>, key: &OgImageData, val: Vec<u8>) {
-    cache.insert(cache_key(&key), val);
-}
-
-fn cache_key(data: &OgImageData) -> String {
-    format!(
-        "{}|{}|{}",
-        data.title,
-        data.subtitle.clone().unwrap_or_default(),
-        data.datestring
-    )
-}
 
 #[derive(Debug, Clone, Serialize, Hash, PartialEq, Eq, IntoDict, IntoValue)]
 pub struct OgImageData {
@@ -65,11 +38,11 @@ impl From<OgImageData> for Dict {
     }
 }
 
-pub fn generate(data: OgImageData) -> Result<Vec<u8>> {
+pub fn generate(data: &OgImageData) -> Result<Vec<u8>> {
     // Check cache first
     {
-        let cache = acquire_cache().lock()?;
-        if let Some(cached_image) = get_cache_item(&cache, &data) {
+        let cache = cache::acquire().lock()?;
+        if let Some(cached_image) = cache::get(&cache, data) {
             return Ok(cached_image);
         }
         // drop lock
@@ -89,8 +62,8 @@ pub fn generate(data: OgImageData) -> Result<Vec<u8>> {
 
     // Cache the result
     {
-        let mut cache = acquire_cache().lock()?;
-        insert_cache_item(&mut cache, &data, png.clone());
+        let mut cache = cache::acquire().lock()?;
+        cache::insert(&mut cache, data, png.clone());
         // drop lock
     }
 
@@ -110,10 +83,40 @@ pub fn og_image_handler(
         datestring: format_date(post.creation_datetime),
     };
 
-    let image_bytes = generate(og_image_data)?;
+    let image_bytes = generate(&og_image_data)?;
 
     Ok(Response::builder()
         .content_type("image/png")
         .body(Body::from_vec(image_bytes))
         .into_response())
+}
+
+mod cache {
+    use super::{HashMap, Mutex, MutexGuard, OgImageData};
+
+    type Cache = HashMap<String, Vec<u8>>;
+
+    // Simple in-memory cache for rendered images
+    static IMAGE_CACHE: std::sync::OnceLock<Mutex<Cache>> = std::sync::OnceLock::new();
+
+    pub(super) fn acquire() -> &'static Mutex<Cache> {
+        IMAGE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+    }
+
+    pub(super) fn get(cache: &MutexGuard<'_, Cache>, key: &OgImageData) -> Option<Vec<u8>> {
+        cache.get(&cache_key(key)).cloned()
+    }
+
+    pub(super) fn insert(cache: &mut MutexGuard<'_, Cache>, key: &OgImageData, val: Vec<u8>) {
+        cache.insert(cache_key(key), val);
+    }
+
+    fn cache_key(data: &OgImageData) -> String {
+        format!(
+            "{}|{}|{}",
+            data.title,
+            data.subtitle.clone().unwrap_or_default(),
+            data.datestring
+        )
+    }
 }
