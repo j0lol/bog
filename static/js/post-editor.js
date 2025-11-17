@@ -67,7 +67,7 @@ const handleTabs = (el) => {
       }
 
       preview?.();
-      Prism?.highlightAll?.();
+      highlightAll();
     }
   });
 };
@@ -90,7 +90,7 @@ const handleEnterIndent = (el) => {
     el.selectionStart = el.selectionEnd = caretPos;
 
     preview?.();
-    Prism?.highlightAll?.();
+    highlightAll();
   });
 };
 
@@ -106,7 +106,7 @@ const handleBackspace = (el) => {
       el.selectionStart = el.selectionEnd = selectionStart - 4;
 
       preview?.();
-      Prism?.highlightAll?.();
+      highlightAll();
     }
   });
 };
@@ -198,7 +198,7 @@ async function syncDraft() {
 
 function updatePreview(sync = false) {
   preview();
-  Prism.highlightAll();
+  highlightAll();
   if (typeof createFootnotes === "function") createFootnotes();
   if (sync) syncDraft();
 }

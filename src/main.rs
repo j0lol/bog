@@ -21,12 +21,8 @@ use std::{
 };
 
 use poem::{
-    EndpointExt, Route, Server,
-    endpoint::{StaticFileEndpoint, StaticFilesEndpoint},
-    get,
-    listener::TcpListener,
-    middleware::CookieJarManager,
-    web::Data,
+    EndpointExt, Route, Server, endpoint::StaticFilesEndpoint, get, listener::TcpListener,
+    middleware::CookieJarManager, web::Data,
 };
 use rusqlite::Connection;
 
@@ -63,6 +59,7 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/login", poem::post(login))
         .at("/feed", get(feed_handler))
         .nest("/static", StaticFilesEndpoint::new("./static/"))
+        .nest("/dist", StaticFilesEndpoint::new(env!("OUT_DIR")))
         .with(CookieJarManager::new())
         .data(conn.clone());
 

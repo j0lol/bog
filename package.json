@@ -1,0 +1,16 @@
+{
+  "name": "bog",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "shiki": "^3.15.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "modern-normalize": "^3.0.1"
+  }
+}

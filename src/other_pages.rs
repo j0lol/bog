@@ -125,9 +125,9 @@ pub fn index() -> Markup {
 
                     pre {
                         code.language-html {
-                            (PreEscaped("&#x3C;a rel=&#x22;noreferrer&#x22; href=&#x22;https://j0.lol&#x22;&#x3E;
-        &#x3C;img src=&#x22;https://j0.lol/static/badges/j0.gif&#x22; alt=&#x22;Logo: j0, with subtitle &#x27;deer thing&#x27;. To the side, there is a purple deer with yellow features. Various elements flicker.&#x22;&#x3E;
-    &#x3C;/a&#x3E;"))
+                            (PreEscaped(r#"<a rel="noreferrer" href="https://j0.lol">
+    <img src="https://j0.lol/static/badges/j0.gif" alt="Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.">
+</a>"#))
                         }
                     }
                 }
