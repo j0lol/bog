@@ -22,7 +22,7 @@ pub fn bundle_js() -> Result<(), Box<dyn Error>> {
         .status()?;
     assert!(status.success());
 
-    std::fs::remove_file(format!("{out_dir}/modern-normalize.css"))?;
+    let _ = std::fs::remove_file(format!("{out_dir}/modern-normalize.css"));
     copy(
         "node_modules/modern-normalize/modern-normalize.css",
         format!("{out_dir}/modern-normalize.css"),
