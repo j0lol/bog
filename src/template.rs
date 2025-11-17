@@ -16,7 +16,7 @@ pub fn header_extra(markup: &Markup) -> Markup {
             meta charset="utf-8";
             meta name="viewport" content="width=device-width";
 
-            link rel="stylesheet" type="text/css" href="/vendored/modern-normalize.css";
+            link rel="stylesheet" type="text/css" href="/static/css/normalize.css";
             link rel="stylesheet" type="text/css" href="/static/css/style.css";
             link rel="stylesheet" type="text/css" href="/static/css/nav.css";
             link rel="stylesheet" type="text/css" href="/static/css/dialog.css";
@@ -26,7 +26,7 @@ pub fn header_extra(markup: &Markup) -> Markup {
             meta name="theme-color" content="#b497ee";
             meta name="apple-mobile-web-app-status-bar-style" content="#b497ee";
 
-            script src="/vendored/prismjs/prism.js" defer {}
+            script src="/static/js/prism.js" defer {}
             link rel="stylesheet" type="text/css" href="/static/css/prism-theme-mocha.css" defer;
 
             link rel="icon" href="/static/favicon.ico" sizes="any";

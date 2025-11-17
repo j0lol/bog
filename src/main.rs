@@ -63,14 +63,6 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/login", poem::post(login))
         .at("/feed", get(feed_handler))
         .nest("/static", StaticFilesEndpoint::new("./static/"))
-        .nest(
-            "/vendored/modern-normalize.css",
-            StaticFileEndpoint::new("./node_modules/modern-normalize/modern-normalize.css"),
-        )
-        .nest(
-            "/vendored/prismjs",
-            StaticFilesEndpoint::new("./node_modules/prismjs"), // ./prism.js
-        )
         .with(CookieJarManager::new())
         .data(conn.clone());
 
