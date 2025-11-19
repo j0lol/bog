@@ -14,6 +14,7 @@ use super::{
 use crate::{
     D, W,
     error::{AppError, Result},
+    post::render_post,
     template::header_extra,
 };
 
@@ -43,6 +44,11 @@ pub struct SubmitNewPostForm {
     pub category: Option<String>,
     pub bsky_uri: Option<String>,
     pub creation_datetime: String,
+}
+
+#[derive(Deserialize)]
+pub struct RenderDraftForm {
+    pub contents: String,
 }
 
 #[derive(Deserialize)]
@@ -222,7 +228,7 @@ pub fn update_draft(
 
     let post_data = PostData {
         title: form.title,
-        contents: form.contents,
+        contents: form.contents.clone(),
         slug: form.slug,
         subtitle: form.subtitle,
         category: form.category,
@@ -232,7 +238,16 @@ pub fn update_draft(
 
     save_post(conn, &post_data, PostOperation::UpdateDraft)?;
 
-    Ok("Draft saved".into_response())
+    let rendered = render_post(&form.contents)?;
+    Ok(rendered.into_response())
+}
+
+#[handler]
+pub fn render_draft(cookie_jar: &CookieJar, Json(form): Json<RenderDraftForm>) -> Result<Response> {
+    check_auth(cookie_jar)?;
+
+    let rendered = render_post(&form.contents)?;
+    Ok(rendered.into_response())
 }
 
 fn save_post(conn: &W, post_data: &PostData, operation: PostOperation) -> Result<()> {

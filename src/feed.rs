@@ -1,12 +1,10 @@
 use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
-use lol_html::{RewriteStrSettings, comments, element, html_content::ContentType, rewrite_str};
 use poem::{IntoResponse, handler, web::Data};
 
 use crate::{
     D, W,
-    post::fetch_all_posts,
-    template::{SpeechCharacter, SpeechDetails, SpeechEmotion, render_speech},
+    post::{fetch_all_posts, render::render_post_nocss},
 };
 
 const HOST: &str = "https://j0.lol";
@@ -22,58 +20,9 @@ fn entries(conn: &W) -> Vec<Entry> {
                 name: "Jo Null".to_owned(),
                 ..Default::default()
             };
+
             #[allow(clippy::expect_used)]
-            let contents = rewrite_str(
-                &post.contents,
-                RewriteStrSettings {
-                    element_content_handlers: vec![
-                        element!("speech-box", |el| {
-                            let char = el.get_attribute("character").unwrap_or("deer".to_string());
-                            let emotion =
-                                el.get_attribute("emotion").unwrap_or("neutral".to_string());
-
-                            let SpeechDetails { class: _, alt, src } = render_speech(
-                                &match char.as_ref() {
-                                    "you" => SpeechCharacter::You,
-                                    _ => SpeechCharacter::Deer,
-                                },
-                                &match emotion.as_ref() {
-                                    "worried" => SpeechEmotion::Worried,
-                                    "shocked" => SpeechEmotion::Shocked,
-                                    "happy" => SpeechEmotion::Happy,
-                                    _ => SpeechEmotion::Neutral,
-                                },
-                            );
-
-                            el.set_tag_name("div")?;
-                            el.before(
-                                &format!(
-                                    r#"
-                                <table>
-                                <tbody>
-                                    <td>
-                                        <img width="120" height="120" src="{src}" alt="{alt}">
-                                    </td>
-                                    <td>
-                                "#
-                                ),
-                                ContentType::Html,
-                            );
-                            el.after("</td></tbody></table>", ContentType::Html);
-
-                            Ok(())
-                        }),
-                        comments!("pre > code", |c| {
-                            // for prism.js html-in-comments
-                            c.replace(c.text().trim(), ContentType::Text);
-
-                            Ok(())
-                        }),
-                    ],
-                    ..RewriteStrSettings::new()
-                },
-            )
-            .expect("HTML rewriting should not fail for RSS feed generation");
+            let contents = render_post_nocss(&post.contents).expect("HTML parse fail in feed");
 
             entry
                 .link(Link {

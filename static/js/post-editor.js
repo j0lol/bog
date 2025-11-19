@@ -7,7 +7,7 @@ const inputBskyUri = document.querySelector('input[name="bsky_uri"]');
 const editor = document.querySelector("#editor");
 const editorPreview = document.querySelector("#editorPreview");
 
-function preview() {
+function preview(render) {
   editorPreview.innerHTML = `
     <h1 class="blog-head">${inputTitle.value}</h1>
     <span class="blog-subhead"><em>${inputSubtitle.value}</em></span>
@@ -16,7 +16,7 @@ function preview() {
     </p>
     <hr class='frontmatter'>
   `;
-  editorPreview.innerHTML += editor.value;
+  editorPreview.innerHTML += render;
 }
 
 // Enhanced editor features
@@ -66,7 +66,7 @@ const handleTabs = (el) => {
         target.selectionEnd = selectionEnd + shiftAmount;
       }
 
-      preview?.();
+      updatePreview(false);
       highlightAll();
     }
   });
@@ -89,7 +89,7 @@ const handleEnterIndent = (el) => {
     const caretPos = selectionStart + 1 + indent.length;
     el.selectionStart = el.selectionEnd = caretPos;
 
-    preview?.();
+    updatePreview(false);
     highlightAll();
   });
 };
@@ -105,7 +105,7 @@ const handleBackspace = (el) => {
       el.value = value.slice(0, selectionStart - 4) + value.slice(selectionEnd);
       el.selectionStart = el.selectionEnd = selectionStart - 4;
 
-      preview?.();
+      updatePreview(false);
       highlightAll();
     }
   });
@@ -181,7 +181,7 @@ class SpeechBoxElement extends HTMLElement {
 customElements.define("speech-box", SpeechBoxElement);
 
 async function syncDraft() {
-  await fetch(`/blog/new/sync`, {
+  const resp = await fetch(`/blog/new/sync`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -194,13 +194,32 @@ async function syncDraft() {
       bsky_uri: inputBskyUri.value || null,
     }),
   });
+
+  return await resp.text();
 }
 
-function updatePreview(sync = false) {
-  preview();
-  highlightAll();
+
+async function renderDraft() {
+  const resp = await fetch(`/blog/edit/render`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: editor.value,
+    }),
+  });
+
+  return await resp.text();
+}
+
+async function updatePreview(sync = false) {
+  if (sync) {
+    let render = await syncDraft();
+    preview(render);
+  } else {
+    let render = await renderDraft();
+    preview(render);
+  }
   if (typeof createFootnotes === "function") createFootnotes();
-  if (sync) syncDraft();
 }
 
 // --- Entry point ---
@@ -213,7 +232,7 @@ function initPostEditor(mode = "edit") {
     el?.addEventListener("input", () => updatePreview(sync)),
   );
 
-  preview();
+  updatePreview(false)
 }
 
 // Export the initializer

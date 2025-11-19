@@ -1,54 +1,20 @@
-use lol_html::{RewriteStrSettings, element, html_content::ContentType, rewrite_str};
+use super::{clock_icon, fetch::fetch_post, format_date};
+use crate::{
+    D, W,
+    error::Result,
+    post::render_post,
+    template::{footer, header_extra, navbar},
+};
 use maud::{PreEscaped, html};
 use poem::{
     IntoResponse, Response, handler,
     web::{Data, Path},
 };
 
-use super::{clock_icon, fetch::fetch_post, format_date};
-use crate::{
-    D, W,
-    error::{AppError, Result},
-    template::{
-        SpeechCharacter, SpeechDetails, SpeechEmotion, footer, header_extra, navbar, render_speech,
-    },
-};
-
 #[handler]
 pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {
     let post = fetch_post(slug, conn)?;
-
-    let contents = rewrite_str(
-        &post.contents,
-        RewriteStrSettings {
-            element_content_handlers: vec![element!("speech-box", |el| {
-                let char = el.get_attribute("character").unwrap_or("deer".to_string());
-                let emotion = el.get_attribute("emotion").unwrap_or("neutral".to_string());
-
-                let SpeechDetails { class, alt, src } = render_speech(
-                    &match char.as_ref() {
-                        "you" => SpeechCharacter::You,
-                        _ => SpeechCharacter::Deer,
-                    },
-                    &match emotion.as_ref() {
-                        "worried" => SpeechEmotion::Worried,
-                        "shocked" => SpeechEmotion::Shocked,
-                        "happy" => SpeechEmotion::Happy,
-                        _ => SpeechEmotion::Neutral,
-                    },
-                );
-
-                el.set_tag_name("div")?;
-                el.set_attribute("class", &format!("dialog speech {class}"))?;
-                el.before(&format!(r#"<div class="dialog-box"> <img class="raw dialog profile" width="120" height="120" src="{src}" alt="{alt}"> "#), ContentType::Html);
-                el.after("</div>", ContentType::Html);
-
-                Ok(())
-            })],
-            ..RewriteStrSettings::new()
-        },
-    )
-    .map_err(|e| AppError::internal_server_error(e.to_string()))?;
+    let contents = render_post(&post.contents)?;
 
     let datestring = format_date(post.creation_datetime);
 
