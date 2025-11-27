@@ -81,7 +81,14 @@ fn code_block(contents: &str, attrs: HashMap<&str, &str>) -> String {
     let mut output = Vec::new();
     formatter.format(&mut output).unwrap();
 
-    String::from_utf8(output).unwrap()
+    let output = String::from_utf8(output).unwrap();
+    html! {
+        .code-block {
+            .code-language { (lang) }
+            (PreEscaped(output))
+        }
+    }
+    .into_string()
 }
 
 fn code_block_nocss(contents: &str, attrs: HashMap<&str, &str>) -> String {
