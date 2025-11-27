@@ -8,15 +8,20 @@ const editor = document.querySelector("#editor");
 const editorPreview = document.querySelector("#editorPreview");
 
 function preview(render) {
-  editorPreview.innerHTML = `
-    <h1 class="blog-head">${inputTitle.value}</h1>
-    <span class="blog-subhead"><em>${inputSubtitle.value}</em></span>
-    <p class='blog-publish'>
-      🕒 ${inputDt.value}
-    </p>
-    <hr class='frontmatter'>
-  `;
-  editorPreview.innerHTML += render;
+  if (render !== false) {
+    editorPreview.classList.remove("error");
+    editorPreview.innerHTML = `
+      <h1 class="blog-head">${inputTitle.value}</h1>
+      <span class="blog-subhead"><em>${inputSubtitle.value}</em></span>
+      <p class='blog-publish'>
+        🕒 ${inputDt.value}
+      </p>
+      <hr class='frontmatter'>
+    `;
+    editorPreview.innerHTML += render;
+  } else {
+    editorPreview.classList.add("error");
+  }
 }
 
 // Enhanced editor features
@@ -67,7 +72,6 @@ const handleTabs = (el) => {
       }
 
       updatePreview(false);
-      highlightAll();
     }
   });
 };
@@ -90,7 +94,6 @@ const handleEnterIndent = (el) => {
     el.selectionStart = el.selectionEnd = caretPos;
 
     updatePreview(false);
-    highlightAll();
   });
 };
 
@@ -106,7 +109,6 @@ const handleBackspace = (el) => {
       el.selectionStart = el.selectionEnd = selectionStart - 4;
 
       updatePreview(false);
-      highlightAll();
     }
   });
 };
@@ -137,49 +139,6 @@ const enableEditorFeatures = (el) => {
   handleBackspace(el);
 };
 
-// SpeechBox web component
-class SpeechBoxElement extends HTMLElement {
-  connectedCallback() {
-    const char = this.getAttribute("character");
-    const emotion = this.getAttribute("emotion");
-
-    const images = {
-      deer: {
-        neutral: {
-          src: "/static/speech/deer/neutral.png",
-          alt: "drawing of a deer, talking to you.",
-        },
-        happy: {
-          src: "/static/speech/deer/happy.png",
-          alt: "drawing of a happy deer.",
-        },
-        shocked: {
-          src: "/static/speech/deer/shock.png",
-          alt: "drawing of a shocked deer.",
-        },
-        worried: {
-          src: "/static/speech/deer/sad.png",
-          alt: "drawing of a sad or worried deer.",
-        },
-      },
-      you: { src: "/static/speech/you.png", alt: "drawing of you, smiling." },
-    };
-
-    const { src, alt } =
-      images[char]?.[emotion] || images[char]?.neutral || images.deer;
-
-    this.innerHTML = `
-      <div class="dialog-box">
-        <img width="120" height="120" class="raw dialog profile" src="${src}" alt="${alt}">
-        <div class="dialog speech ${char}">
-          ${this.innerHTML}
-        </div>
-      </div>`;
-  }
-}
-
-customElements.define("speech-box", SpeechBoxElement);
-
 async function syncDraft() {
   const resp = await fetch(`/blog/new/sync`, {
     method: "POST",
@@ -195,7 +154,11 @@ async function syncDraft() {
     }),
   });
 
-  return await resp.text();
+  if (resp.ok) {
+    return await resp.text();
+  } else {
+    return false
+  }
 }
 
 
@@ -208,7 +171,11 @@ async function renderDraft() {
     }),
   });
 
-  return await resp.text();
+  if (resp.ok) {
+    return await resp.text();
+  } else {
+    return false
+  }
 }
 
 async function updatePreview(sync = false) {

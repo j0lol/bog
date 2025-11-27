@@ -769,6 +769,10 @@ span.emoji-icon {
     border: 1px solid rebeccapurple;
     border-radius: 0.3rem;
 }
+#editorPreview.error {
+    border: 1px solid red;
+    border-radius: 0;
+}
 
 .editorInnerWrapper {
     display: flex;
