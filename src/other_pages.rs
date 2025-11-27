@@ -331,7 +331,7 @@ pub fn projects() -> Markup {
                             a href=(play) { "Play" }
                         }
                         @if !url.is_empty() {
-                            a href=(report) { "Source" }
+                            a href=(url) { "Source" }
                         }
                         @if !report.is_empty() {
                             a href=(report) { "Report" }
