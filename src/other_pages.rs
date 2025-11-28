@@ -1,4 +1,7 @@
-use crate::template::{SpeechCharacter, SpeechEmotion, footer, header, navbar, page, speech};
+use crate::{
+    post::render::maud_code_block,
+    template::{SpeechCharacter, SpeechEmotion, footer, header, navbar, page, speech},
+};
 use maud::{Markup, PreEscaped, html};
 use poem::handler;
 use rand::seq::SliceRandom;
@@ -123,13 +126,9 @@ pub fn index() -> Markup {
                 details {
                     summary { "Embed code for my website" }
 
-                    pre {
-                        code.language-html {
-                            (PreEscaped(r#"<a rel="noreferrer" href="https://j0.lol">
+                    (maud_code_block(r#"<a rel="noreferrer" href="https://j0.lol">
     <img src="https://j0.lol/static/badges/j0.gif" alt="Logo: j0, with subtitle 'deer thing'. To the side, there is a purple deer with yellow features. Various elements flicker.">
-</a>"#))
-                        }
-                    }
+</a>"#, "html"))
                 }
 
                 @let btns = vec![

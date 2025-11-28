@@ -7,7 +7,7 @@ use crate::{
 };
 use autumnus::{formatter::Formatter, languages::Language};
 use makup::Rewriter;
-use maud::{PreEscaped, html};
+use maud::{Markup, PreEscaped, html};
 use std::collections::HashMap;
 
 fn speech_box(contents: &str, attrs: HashMap<&str, &str>) -> String {
@@ -61,17 +61,11 @@ fn speech_box_nocss(contents: &str, attrs: HashMap<&str, &str>) -> String {
     }
     .into_string()
 }
-// Safety: function is not allowed to error. Annoyingly.
-#[allow(clippy::expect_used, clippy::unwrap_used)]
-fn code_block(contents: &str, attrs: HashMap<&str, &str>) -> String {
-    let lang = attrs
-        .get("lang")
-        .or_else(|| attrs.get("language"))
-        .unwrap_or(&"plain");
 
+pub(crate) fn maud_code_block(text: &str, lang: &str) -> Markup {
     let formatter = autumnus::HtmlInlineBuilder::new()
-        .lang(Language::guess(lang, contents))
-        .source(contents)
+        .lang(Language::guess(lang, text))
+        .source(text)
         .theme(Some(
             autumnus::themes::get("catppuccin_mocha").expect("Built in!"),
         ))
@@ -88,7 +82,17 @@ fn code_block(contents: &str, attrs: HashMap<&str, &str>) -> String {
             (PreEscaped(output))
         }
     }
-    .into_string()
+}
+
+// Safety: function is not allowed to error. Annoyingly.
+#[allow(clippy::expect_used, clippy::unwrap_used)]
+fn code_block(contents: &str, attrs: HashMap<&str, &str>) -> String {
+    let lang = attrs
+        .get("lang")
+        .or_else(|| attrs.get("language"))
+        .unwrap_or(&"plain");
+
+    maud_code_block(contents, lang).into_string()
 }
 
 fn code_block_nocss(contents: &str, attrs: HashMap<&str, &str>) -> String {

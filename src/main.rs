@@ -64,6 +64,7 @@ async fn main() -> Result<(), std::io::Error> {
 
     let port = env::var("PORT").unwrap_or("3000".to_string());
 
+    println!("Listening on https://localhost:{port}");
     Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
         .name("hello-world")
         .run(app)
