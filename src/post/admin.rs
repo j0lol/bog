@@ -1,31 +1,31 @@
 use chrono::DateTime;
 use maud::{Markup, PreEscaped, html};
 use poem::{
-    IntoResponse, Response, handler,
+    IntoResponse as _, Response, handler,
     web::{Data, Form, Json, Redirect, cookie::CookieJar},
 };
 use serde::Deserialize;
 
 use super::{
     ISO8601_DATE, Post, clean_empty_string,
-    fetch::{fetch_draft, fetch_post},
+    fetch::{one, one_draft},
     parse_date, read_secret,
 };
 use crate::{
     D, W,
     error::{AppError, Result},
-    post::render_post,
+    post,
     template::header_extra,
 };
 
 struct PostData {
-    title: String,
+    bsky_uri: Option<String>,
+    category: Option<String>,
     contents: String,
+    creation_datetime: DateTime<chrono::Local>,
     slug: String,
     subtitle: Option<String>,
-    category: Option<String>,
-    bsky_uri: Option<String>,
-    creation_datetime: DateTime<chrono::Local>,
+    title: String,
 }
 
 #[derive(Copy, Clone)]
@@ -37,13 +37,13 @@ enum PostOperation {
 
 #[derive(Deserialize)]
 pub struct SubmitNewPostForm {
-    pub title: String,
+    pub bsky_uri: Option<String>,
+    pub category: Option<String>,
     pub contents: String,
+    pub creation_datetime: String,
     pub slug: String,
     pub subtitle: Option<String>,
-    pub category: Option<String>,
-    pub bsky_uri: Option<String>,
-    pub creation_datetime: String,
+    pub title: String,
 }
 
 #[derive(Deserialize)]
@@ -53,13 +53,13 @@ pub struct RenderDraftForm {
 
 #[derive(Deserialize)]
 pub struct SubmitEditedPostForm {
-    pub title: String,
+    pub bsky_uri: Option<String>,
+    pub category: Option<String>,
     pub contents: String,
+    pub creation_datetime: String,
     pub slug: String,
     pub subtitle: Option<String>,
-    pub category: Option<String>,
-    pub bsky_uri: Option<String>,
-    pub creation_datetime: String,
+    pub title: String,
 }
 
 fn check_auth(cookie_jar: &CookieJar) -> Result<()> {
@@ -71,21 +71,21 @@ fn check_auth(cookie_jar: &CookieJar) -> Result<()> {
 }
 
 #[handler]
-pub fn login(body: String, cookie_jar: &CookieJar) -> impl IntoResponse {
+pub fn login(body: String, cookie_jar: &CookieJar) -> Result<Response> {
     cookie_jar.add(poem::web::cookie::Cookie::new_with_str("secret_pass", body));
-    #[allow(clippy::expect_used)]
     let secret_value = cookie_jar
         .get("secret_pass")
-        .expect("Cookie should exist after being set");
-    html! {(secret_value)}.into_response()
+        .ok_or(AppError::internal_server_error(
+            "Cookie should exist after being set".to_owned(),
+        ))?;
+    Ok(html! {(secret_value)}.into_response())
 }
 
 #[handler]
 pub fn new_post(cookie_jar: &CookieJar, Data(conn): D<&W>) -> Result<Response> {
     check_auth(cookie_jar)?;
 
-    let post = fetch_draft(conn)
-        .map_err(|_| AppError::internal_server_error("Could not fetch draft".to_string()))?;
+    let post = one_draft(conn)?;
 
     let response = render_post_form(&post, "POST", "/blog/new", "new");
     Ok(response.into_response())
@@ -99,7 +99,7 @@ pub fn edit_post(
 ) -> Result<Response> {
     check_auth(cookie_jar)?;
 
-    let post = fetch_post(slug.to_string(), conn)?;
+    let post = one(slug.to_string(), conn)?;
     let response = render_post_form(&post, "POST", &format!("/blog/edit/{slug}"), "edit");
     Ok(response.into_response())
 }
@@ -238,7 +238,7 @@ pub fn update_draft(
 
     save_post(conn, &post_data, PostOperation::UpdateDraft)?;
 
-    let rendered = render_post(&form.contents)?;
+    let rendered = post::render::render(&form.contents)?;
     Ok(rendered.into_response())
 }
 
@@ -246,7 +246,7 @@ pub fn update_draft(
 pub fn render_draft(cookie_jar: &CookieJar, Json(form): Json<RenderDraftForm>) -> Result<Response> {
     check_auth(cookie_jar)?;
 
-    let rendered = render_post(&form.contents)?;
+    let rendered = post::render::render(&form.contents)?;
     Ok(rendered.into_response())
 }
 

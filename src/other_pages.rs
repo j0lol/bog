@@ -4,7 +4,7 @@ use crate::{
 };
 use maud::{Markup, PreEscaped, html};
 use poem::handler;
-use rand::seq::SliceRandom;
+use rand::seq::SliceRandom as _;
 
 #[handler]
 pub fn index() -> Markup {

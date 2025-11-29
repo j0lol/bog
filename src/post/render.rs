@@ -5,7 +5,7 @@ use crate::{
     error::{AppError, Result},
     template::{SpeechCharacter, SpeechEmotion},
 };
-use autumnus::{formatter::Formatter, languages::Language};
+use autumnus::{formatter::Formatter as _, languages::Language};
 use makup::Rewriter;
 use maud::{Markup, PreEscaped, html};
 use std::collections::HashMap;
@@ -62,6 +62,11 @@ fn speech_box_nocss(contents: &str, attrs: HashMap<&str, &str>) -> String {
     .into_string()
 }
 
+#[expect(
+    clippy::expect_used,
+    clippy::unwrap_used,
+    reason = "Function is not allowed to error, annoyingly."
+)]
 pub(crate) fn maud_code_block(text: &str, lang: &str) -> Markup {
     let formatter = autumnus::HtmlInlineBuilder::new()
         .lang(Language::guess(lang, text))
@@ -84,8 +89,6 @@ pub(crate) fn maud_code_block(text: &str, lang: &str) -> Markup {
     }
 }
 
-// Safety: function is not allowed to error. Annoyingly.
-#[allow(clippy::expect_used, clippy::unwrap_used)]
 fn code_block(contents: &str, attrs: HashMap<&str, &str>) -> String {
     let lang = attrs
         .get("lang")
@@ -116,7 +119,7 @@ fn code_block_nocss(contents: &str, attrs: HashMap<&str, &str>) -> String {
     .into_string()
 }
 
-pub fn render_post(markup: &str) -> Result<String> {
+pub fn render(markup: &str) -> Result<String> {
     let mut rewriter = Rewriter::default();
     rewriter.add_component("speech-box", speech_box);
     rewriter.add_component("code-block", code_block);
@@ -128,7 +131,7 @@ pub fn render_post(markup: &str) -> Result<String> {
     Ok(contents)
 }
 
-pub fn render_post_nocss(markup: &str) -> Result<String> {
+pub fn no_css(markup: &str) -> Result<String> {
     let mut rewriter = Rewriter::default();
     rewriter.add_component("speech-box", speech_box_nocss);
     rewriter.add_component("code-block", code_block_nocss);

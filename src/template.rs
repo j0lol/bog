@@ -141,10 +141,10 @@ pub fn page_article(markup: &Markup, endpoint: &str) -> Markup {
 }
 
 pub enum SpeechEmotion {
-    Neutral,
-    Worried,
-    Shocked,
     Happy,
+    Neutral,
+    Shocked,
+    Worried,
 }
 
 pub enum SpeechCharacter {
@@ -153,8 +153,8 @@ pub enum SpeechCharacter {
 }
 
 pub struct SpeechDetails {
-    pub class: String,
     pub alt: String,
+    pub class: String,
     pub src: String,
 }
 #[must_use]

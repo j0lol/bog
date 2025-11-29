@@ -2,15 +2,13 @@ use atom_syndication::{Content, Entry, EntryBuilder, FeedBuilder, Link, Person};
 use chrono::Utc;
 use poem::{IntoResponse, handler, web::Data};
 
-use crate::{
-    D, W,
-    post::{fetch_all_posts, render::render_post_nocss},
-};
+use crate::{D, W, post};
 
 const HOST: &str = "https://j0.lol";
 
+#[expect(clippy::expect_used, reason = "Feed reader is low-stakes")]
 fn entries(conn: &W) -> Vec<Entry> {
-    let posts = fetch_all_posts(conn).unwrap_or_default();
+    let posts = post::fetch::all(conn).unwrap_or_default();
 
     let entries: Vec<_> = posts
         .iter()
@@ -21,8 +19,7 @@ fn entries(conn: &W) -> Vec<Entry> {
                 ..Default::default()
             };
 
-            #[allow(clippy::expect_used)]
-            let contents = render_post_nocss(&post.contents).expect("HTML parse fail in feed");
+            let contents = post::render::no_css(&post.contents).expect("HTML parse fail in feed");
 
             entry
                 .link(Link {
@@ -53,12 +50,12 @@ pub fn feed(Data(conn): D<&W>) -> impl IntoResponse {
         .links(vec![
             Link {
                 href: format!("{HOST}/blog"),
-                rel: "alternate".to_string(),
+                rel: "alternate".to_owned(),
                 ..Default::default()
             },
             Link {
                 href: format!("{HOST}/feed"),
-                rel: "self".to_string(),
+                rel: "self".to_owned(),
                 ..Default::default()
             },
         ])
@@ -67,7 +64,7 @@ pub fn feed(Data(conn): D<&W>) -> impl IntoResponse {
             name: "Jo Null".to_owned(),
             ..Default::default()
         })
-        .base(HOST.to_string())
+        .base(HOST.to_owned())
         .icon(format!("{HOST}/static/favicon.ico"))
         .logo(format!("{HOST}/static/j0site-banner.png"))
         .updated(Utc::now())

@@ -6,26 +6,20 @@ pub mod view;
 
 use std::fs::read_to_string;
 
-pub use admin::render_draft;
-pub use admin::{edit_post, login, new_post, submit_edited_post, submit_new_post, update_draft};
-use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDateTime, Utc};
-pub use fetch::fetch_all_posts;
-pub use list::list_posts;
+use chrono::{DateTime, Datelike as _, FixedOffset, Local, NaiveDateTime, Utc};
 use maud::{Markup, html};
-pub use render::render_post;
 use serde::Deserialize;
-pub use view::view_post;
 const ISO8601_DATE: &str = "%Y-%m-%dT%H:%M";
 
 #[derive(Deserialize, Debug)]
 pub struct Post {
-    pub title: String,
+    pub bsky_uri: Option<String>,
+    pub category: Option<String>,
     pub contents: String,
+    pub creation_datetime: DateTime<Local>,
     pub slug: String,
     pub subtitle: Option<String>,
-    pub category: Option<String>,
-    pub bsky_uri: Option<String>,
-    pub creation_datetime: DateTime<Local>,
+    pub title: String,
 }
 
 #[must_use]
@@ -65,12 +59,15 @@ pub fn parse_date(datestring: &str) -> chrono::DateTime<FixedOffset> {
 }
 
 #[must_use]
-#[allow(clippy::expect_used)]
+#[expect(
+    clippy::expect_used,
+    reason = "We need the secret for progam execution"
+)]
 pub fn read_secret() -> String {
     read_to_string("./.secret")
         .expect("Failed to read secret file")
         .trim()
-        .to_string()
+        .to_owned()
 }
 
 #[must_use]

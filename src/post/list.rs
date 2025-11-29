@@ -1,16 +1,16 @@
-use maud::{PreEscaped, html};
-use poem::{IntoResponse, Response, handler, web::Data};
-
-use super::{clock_icon, fetch::fetch_all_posts, format_date};
+use super::clock_icon;
 use crate::{
     D, W,
     error::Result,
+    post,
     template::{footer, header_extra, navbar},
 };
+use maud::{PreEscaped, html};
+use poem::{IntoResponse as _, Response, handler, web::Data};
 
 #[handler]
-pub fn list_posts(Data(conn): D<&W>) -> Result<Response> {
-    let posts = fetch_all_posts(conn)?;
+pub fn list(Data(conn): D<&W>) -> Result<Response> {
+    let posts = post::fetch::all(conn)?;
 
     let markup = html! {
         ( header_extra(&html! {
@@ -31,21 +31,21 @@ pub fn list_posts(Data(conn): D<&W>) -> Result<Response> {
                         span {
                             (clock_icon())
                         }
-                        time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
+                        time datetime=(post.creation_datetime) { (post::format_date(post.creation_datetime)) }
                     }
                     }
                 }
 
                 h2 { "Trash" }
                 ul {
-                    @for post in posts.iter().filter(|p| p.category == Some("trash".to_string())) {
+                    @for post in posts.iter().filter(|p| p.category == Some("trash".to_owned())) {
                     li  {
                         a href={"/blog/" (post.slug) } { (PreEscaped(post.title.clone())) }
                         br;
                         span {
                             (clock_icon())
                         }
-                        time datetime=(post.creation_datetime) { (format_date(post.creation_datetime)) }
+                        time datetime=(post.creation_datetime) { (post::format_date(post.creation_datetime)) }
                     }
                     }
 

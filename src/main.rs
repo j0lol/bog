@@ -1,6 +1,31 @@
-// warn on clippy pedantic
-#![deny(clippy::unwrap_used, clippy::expect_used)]
-#![warn(clippy::pedantic)]
+// i'm a pedant, sorry.
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::allow_attributes,
+    clippy::empty_enum_variants_with_brackets,
+    clippy::empty_structs_with_brackets,
+    clippy::error_impl_error,
+    clippy::if_then_some_else_none,
+    clippy::impl_trait_in_params,
+    clippy::indexing_slicing,
+    clippy::map_err_ignore,
+    clippy::mod_module_files,
+    clippy::mutex_atomic,
+    clippy::mutex_integer,
+    clippy::needless_raw_strings,
+    clippy::str_to_string,
+    clippy::try_err,
+    clippy::unnecessary_self_imports,
+    clippy::unused_trait_names,
+    clippy::pub_use
+)]
+#![warn(
+    clippy::pedantic,
+    clippy::arbitrary_source_item_ordering,
+    clippy::module_name_repetitions,
+    clippy::pathbuf_init_then_push
+)]
 #![allow(
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
@@ -17,15 +42,10 @@ pub mod template;
 
 use crate::{
     feed::feed as feed_handler,
-    og_image::og_image_handler,
     other_pages::{contact, index, projects},
-    post::{
-        edit_post, list_posts, login, new_post, render_draft, submit_edited_post, submit_new_post,
-        update_draft, view_post,
-    },
 };
 use poem::{
-    EndpointExt, Route, Server, endpoint::StaticFilesEndpoint, get, listener::TcpListener,
+    EndpointExt as _, Route, Server, endpoint::StaticFilesEndpoint, get, listener::TcpListener,
     middleware::CookieJarManager, web::Data,
 };
 use rusqlite::Connection;
@@ -48,21 +68,27 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/", get(index))
         .at("/contact", get(contact))
         .at("/projects", get(projects))
-        .at("/blog", get(list_posts))
-        .at("/blog/new", get(new_post).post(submit_new_post))
-        .at("/blog/new/sync", poem::post(update_draft))
-        .at("/blog/edit/render", poem::post(render_draft))
-        .at("/blog/edit/:slug", get(edit_post).post(submit_edited_post))
-        .at("/blog/:slug", get(view_post))
-        .at("/og-image/:slug", get(og_image_handler))
-        .at("/login", poem::post(login))
+        .at("/blog", get(post::list::list))
+        .at(
+            "/blog/new",
+            get(post::admin::new_post).post(post::admin::submit_new_post),
+        )
+        .at("/blog/new/sync", poem::post(post::admin::update_draft))
+        .at("/blog/edit/render", poem::post(post::admin::render_draft))
+        .at(
+            "/blog/edit/:slug",
+            get(post::admin::edit_post).post(post::admin::submit_edited_post),
+        )
+        .at("/blog/:slug", get(post::view::view))
+        .at("/og-image/:slug", get(og_image::og_image_handler))
+        .at("/login", poem::post(post::admin::login))
         .at("/feed", get(feed_handler))
         .nest("/static", StaticFilesEndpoint::new("./static/"))
         .nest("/dist", StaticFilesEndpoint::new(env!("OUT_DIR")))
         .with(CookieJarManager::new())
         .data(conn.clone());
 
-    let port = env::var("PORT").unwrap_or("3000".to_string());
+    let port = env::var("PORT").unwrap_or("3000".to_owned());
 
     println!("Listening on https://localhost:{port}");
     Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))

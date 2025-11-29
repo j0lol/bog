@@ -5,11 +5,11 @@ use crate::{
 };
 
 pub enum PostSource {
-    Post(String),
     Draft,
+    Post(String),
 }
 
-pub fn fetch_all_posts(conn: &W) -> Result<Vec<Post>> {
+pub fn all(conn: &W) -> Result<Vec<Post>> {
     let conn = conn.lock()?;
 
     let mut stmt = conn.prepare("SELECT title, contents, slug, subtitle, category, bsky_uri, creation_datetime FROM post")
@@ -39,11 +39,11 @@ pub fn fetch_all_posts(conn: &W) -> Result<Vec<Post>> {
     Ok(posts)
 }
 
-pub fn fetch_post(slug: String, conn: &W) -> Result<Post> {
+pub fn one(slug: String, conn: &W) -> Result<Post> {
     fetch_post_inner(&PostSource::Post(slug), conn)
 }
 
-pub fn fetch_draft(conn: &W) -> Result<Post> {
+pub fn one_draft(conn: &W) -> Result<Post> {
     fetch_post_inner(&PostSource::Draft, conn)
 }
 

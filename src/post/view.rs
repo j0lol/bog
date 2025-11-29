@@ -1,20 +1,20 @@
-use super::{clock_icon, fetch::fetch_post, format_date};
+use super::{clock_icon, format_date};
 use crate::{
     D, W,
     error::Result,
-    post::render_post,
+    post,
     template::{footer, header_extra, navbar},
 };
 use maud::{PreEscaped, html};
 use poem::{
-    IntoResponse, Response, handler,
+    IntoResponse as _, Response, handler,
     web::{Data, Path},
 };
 
 #[handler]
-pub fn view_post(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {
-    let post = fetch_post(slug, conn)?;
-    let contents = render_post(&post.contents)?;
+pub fn view(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {
+    let post = post::fetch::one(slug, conn)?;
+    let contents = post::render::render(&post.contents)?;
 
     let datestring = format_date(post.creation_datetime);
 

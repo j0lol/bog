@@ -41,7 +41,10 @@ const MIGRATIONS_SLICE: &[M<'_>] = &[
 
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATIONS_SLICE);
 
-#[allow(clippy::expect_used)]
+#[expect(
+    clippy::expect_used,
+    reason = "If we fail to get DB, we might as well panic."
+)]
 pub fn connect() -> Connection {
     let mut conn = Connection::open("./db.db3").expect("Failed to open database file");
 
