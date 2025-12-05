@@ -12,6 +12,7 @@ pub fn header() -> Markup {
 
 #[must_use]
 pub fn header_extra(markup: &Markup) -> Markup {
+    let bundle_path = format!("/dist/bundle-{}.js", env!("CACHEBUSTING-HASH"));
     html! {
         (DOCTYPE)
         head {
@@ -25,7 +26,7 @@ pub fn header_extra(markup: &Markup) -> Markup {
             meta name="theme-color" content="#b497ee";
             meta name="apple-mobile-web-app-status-bar-style" content="#b497ee";
 
-            script defer src="/dist/bundle.js" {}
+            script defer src=(bundle_path) {}
             link rel="stylesheet" type="text/css" href="/dist/modern-normalize.css";
 
             link rel="icon" href="/static/favicon.ico" sizes="any";

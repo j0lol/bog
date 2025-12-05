@@ -8,7 +8,6 @@ build = "build.rs"
 chrono = { version = "0.4", features = ["serde"] }
 maud = { version = "0.27", features = ["poem"] }
 poem = { version = "3", features = ["static-files", "chrono", "cookie"] }
-rand = "0.9"
 rusqlite = { version = "0.37.0", features = ["chrono", "bundled"] }
 rusqlite_migration = "2.3.0"
 serde = "1"
@@ -23,6 +22,8 @@ typst-as-lib = { version = "0.14.0", features = ["typst-kit-fonts"] }
 derive_typst_intoval = "0.5.0"
 autumnus = { version = "0.7", features = ["all-languages"]}
 makup = { git = "https://tangled.org/j0.lol/makup", version = "0.1.0" }
+rand = "0.9"
 
 [build-dependencies]
 vergen-git2 = { version = "1", features = ["build", "cargo", "rustc", "si"] }
+rand = "0.9"

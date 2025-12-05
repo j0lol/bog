@@ -1,5 +1,6 @@
 use std::{env, error::Error, fs::copy, path::PathBuf, process::Command};
 
+use rand::distr::Alphabetic;
 use vergen_git2::{BuildBuilder, CargoBuilder, Emitter, Git2Builder, RustcBuilder, SysinfoBuilder};
 
 pub fn main() -> Result<(), Box<dyn Error>> {
@@ -10,9 +11,21 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn bundle_js() -> Result<(), Box<dyn Error>> {
-    println!("cargo::rerun-if-changed=src/index.js");
-    println!("cargo::rerun-if-changed=src/login.js");
-    println!("cargo::rerun-if-changed=src/bun.lock");
+    use rand::Rng;
+    let mut rng = rand::rng();
+
+    // println!("cargo::rerun-if-changed=src/index.js");
+    // println!("cargo::rerun-if-changed=src/login.js");
+    // println!("cargo::rerun-if-changed=src/bun.lock");
+
+    let env_name = "CACHEBUSTING-HASH";
+    let env_var: String = (&mut rng)
+        .sample_iter(Alphabetic)
+        .take(16)
+        .map(char::from)
+        .collect();
+
+    println!("cargo:rustc-env={env_name}={env_var}");
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     let out_dir = out_dir.to_str().ok_or("malformed osstr")?;
@@ -20,7 +33,7 @@ pub fn bundle_js() -> Result<(), Box<dyn Error>> {
     let status = Command::new("bun")
         .args([
             "build",
-            &format!("--outfile={out_dir}/bundle.js"),
+            &format!("--outfile={out_dir}/bundle-{env_var}.js"),
             "src/index.js",
         ])
         .status()?;

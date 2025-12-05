@@ -9,7 +9,7 @@ job_button?.addEventListener("click", (e) => {
 
   /* Lasts for browser session */
   document.cookie =
-    "HideJobCallout=true; max-age=7200; SameSite=strict; Secure";
+    "HideJobCallout=true; max-age=7200; SameSite=strict; Path=/; Secure";
 });
 
 job_button_forever?.addEventListener("click", (e) => {
@@ -17,7 +17,7 @@ job_button_forever?.addEventListener("click", (e) => {
 
   /* 10 years should outlast this notice */
   document.cookie =
-    "HideJobCallout=true; max-age=315360000; SameSite=strict; Secure";
+    "HideJobCallout=true; max-age=315360000; SameSite=strict; Path=/; Secure";
 });
 
 if (
