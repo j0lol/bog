@@ -6,6 +6,33 @@ use maud::{Markup, PreEscaped, html};
 use poem::handler;
 use rand::seq::SliceRandom as _;
 
+pub fn job_callout() -> Markup {
+    let immediate_js_src = include_str!("immediate.js");
+
+    html! {
+        script {
+            (PreEscaped(immediate_js_src))
+        }
+
+        div.page #jobCallout style="margin: 1rem auto;
+        padding: 0.7rem 1rem;" {
+            p style="margin: 0;" {
+                "Hi! Sorry to interrupt, but I'm currently " b { "looking for work"} ". " br; " If you know anyone looking for a recent CompSci graduate with deep experience in strictly-typed languages like Rust, please "
+                a href="/contact" { "send the listing to me" } " or " a href="https://vps.j0.lol/Resume%20Jo%20Burnett.pdf" { "send my Resume over"}
+                "!" br; " I'm based in Brighton, UK and looking for roles in and around the London area, or remote. Thanks!"
+            }
+
+            br;
+            button #jobCalloutHide { "Hide" }
+            "\u{00a0}"
+            button #jobCalloutHideForever { "Hide forever" } span style="color: rgba(from var(--text) r g b / 70%); font-style: italic;"  {
+                "\u{00a0} "
+                span title="This button sets a cookie called HideJobCallout in your browser. Whenever you reload the page, it will check to see if this cookie is loaded, and hide this banner by inserting a <style> tag." {"(Sets a cookie in your browser)"}
+            }
+        }
+    }
+}
+
 #[handler]
 pub fn index() -> Markup {
     let mut rng = rand::rng();
@@ -31,6 +58,7 @@ pub fn index() -> Markup {
         (header() )
         div.wrapper {
             ( navbar("/") )
+            ( job_callout() )
             main {
                 h1.fancy.page-head { "Hi!" }
                 ( speech( &SpeechCharacter::Deer, &SpeechEmotion::Neutral, &html! {

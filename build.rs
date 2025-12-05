@@ -10,6 +10,10 @@ pub fn main() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn bundle_js() -> Result<(), Box<dyn Error>> {
+    println!("cargo::rerun-if-changed=src/index.js");
+    println!("cargo::rerun-if-changed=src/login.js");
+    println!("cargo::rerun-if-changed=src/bun.lock");
+
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     let out_dir = out_dir.to_str().ok_or("malformed osstr")?;
 
@@ -27,6 +31,7 @@ pub fn bundle_js() -> Result<(), Box<dyn Error>> {
         "node_modules/modern-normalize/modern-normalize.css",
         format!("{out_dir}/modern-normalize.css"),
     )?;
+
     // println!("cargo:rerun-if-changed=bundle.js");
 
     Ok(())

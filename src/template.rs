@@ -1,5 +1,7 @@
 use maud::{DOCTYPE, Markup, PreEscaped, html};
 
+use crate::other_pages::job_callout;
+
 #[must_use]
 pub fn header() -> Markup {
     header_extra(&html! {
@@ -118,6 +120,7 @@ pub fn page(markup: &Markup, endpoint: &str) -> Markup {
         ( header() )
         div.wrapper {
             (navbar(endpoint))
+            ( job_callout() )
             main {
                 (markup)
             }

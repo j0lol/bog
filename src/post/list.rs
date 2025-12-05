@@ -2,6 +2,7 @@ use super::clock_icon;
 use crate::{
     D, W,
     error::Result,
+    other_pages::job_callout,
     post,
     template::{footer, header_extra, navbar},
 };
@@ -18,6 +19,7 @@ pub fn list(Data(conn): D<&W>) -> Result<Response> {
         }) )
         div.wrapper {
             (navbar("/blog"))
+            ( job_callout() )
             main {
                 h1 { "Post list" }
                 p {

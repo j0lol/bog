@@ -2,6 +2,7 @@ use super::{clock_icon, format_date};
 use crate::{
     D, W,
     error::Result,
+    other_pages::job_callout,
     post,
     template::{footer, header_extra, navbar},
 };
@@ -36,6 +37,9 @@ pub fn view(Path(slug): Path<String>, Data(conn): D<&W>) -> Result<Response> {
         }) )
         div.wrapper {
             (navbar(endpoint))
+
+            ( job_callout() )
+
             article {
                 h1.blog-head { (PreEscaped(post.title.clone() ))}
                 @let subtitle = post.subtitle.clone().unwrap_or_default();
